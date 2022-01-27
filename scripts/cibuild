@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+build() {
+    ./scripts/build build
+}
+
+case $1 in
+build)
+  ./scripts/bootstrap
+  build
+  ;;
+*)
+  echo "invalid argument: $1"
+  exit 1
+  ;;
+esac

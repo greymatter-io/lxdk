@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/urfave/cli/v2" // imports as package "cli"
 	"log"
 	"os"
+
+	"github.com/greymatter-io/lxdk/version"
+	"github.com/urfave/cli/v2" // imports as package "cli"
 )
 
 func main() {
 	app := &cli.App{
-		Name:  "lxdk",
-		Usage: "Fast multi-node Kubernetes on lxd",
-		//Version:     version.Version(),
+		Name:    "lxdk",
+		Usage:   "Fast multi-node Kubernetes on lxd",
+		Version: version.Version(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:      "config",
