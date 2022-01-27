@@ -33,7 +33,7 @@ func main() {
 			createCmd,
 		},
 		CommandNotFound: func(c *cli.Context, cmd string) {
-			fmt.Fprintf(c.App.Writer, `command not found: %s, run "greymatter --help" for help`, cmd)
+			fmt.Fprintf(c.App.Writer, `command not found: %s, run "lxdk --help" for help`, cmd)
 		},
 	}
 
