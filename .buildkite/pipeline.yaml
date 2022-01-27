@@ -3,6 +3,5 @@ steps:
     commands:
       - ./scripts/bootstrap
       - ./scripts/cibuild build
-      - ./scripts/cibuild container
     agents:
       container_image: ubuntu-2104-ci
