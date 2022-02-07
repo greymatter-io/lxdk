@@ -35,37 +35,93 @@ func doCreate(ctx *cli.Context) error {
 	}
 
 	// k8s CA
-	err = createCA(path, "ca", caJSON("Kubernetes"))
+	kubeCAConf := CAConfig{
+		Name: "ca",
+		Dir:  path,
+		CN:   "Kubernetes",
+	}
+	err = CreateCA(kubeCAConf)
 	if err != nil {
 		return err
 	}
 
 	// aggregate CA
-	err = createCA(path, "ca-aggregation", caJSON("Kubernetes Front Proxy CA"))
+	aggregateCAConf := CAConfig{
+		Name: "ca-aggregation",
+		Dir:  path,
+		CN:   "Kubernetes Front Proxy CA",
+	}
+	err = CreateCA(aggregateCAConf)
 	if err != nil {
 		return err
 	}
 
 	// etcd CA
-	err = createCA(path, "ca-etcd", caJSON("etcd"))
+	etcdCAConf := CAConfig{
+		Name: "ca-etcd",
+		Dir:  path,
+		CN:   "etcd",
+	}
+	err = CreateCA(etcdCAConf)
 	if err != nil {
 		return err
 	}
 
 	// CA config
-	_, err = writeCAConfig(path)
+	caConfigPath, err := WriteCAConfig(path)
 	if err != nil {
 		return err
 	}
 
 	// admin cert
-	err = createCert(path, "ca", "admin", certJSON("admin", "system:masters"))
+	adminCertConfig := CertConfig{
+		Name:         "admin",
+		CN:           "system:masters",
+		CA:           kubeCAConf,
+		Dir:          path,
+		CAConfigPath: caConfigPath,
+	}
+	err = createCert(adminCertConfig)
 	if err != nil {
 		return err
 	}
 
 	// aggregation client cert
-	err = createCert(path, "ca-aggregation", "aggregation-client", certJSON("kube-apiserver", "kube-apiserver"))
+	aggCertConfig := CertConfig{
+		Name:         "aggregation-client",
+		JSONOverride: certJSON("kube-apiserver", "kube-apiserver"),
+		CA:           aggregateCAConf,
+		Dir:          path,
+		CAConfigPath: caConfigPath,
+	}
+	err = createCert(aggCertConfig)
+	if err != nil {
+		return err
+	}
+
+	// kube-controler-manager
+	kubeConManConfig := CertConfig{
+		Name:         "kube-controller-manager",
+		CN:           "kube-controller-manager",
+		CA:           kubeCAConf,
+		Dir:          path,
+		CAConfigPath: caConfigPath,
+	}
+	err = createCert(kubeConManConfig)
+	if err != nil {
+		return err
+	}
+
+	// kube-scheduler
+	kubeSchedCertConfig := CertConfig{
+		Name:         "system:kube-scheduler",
+		FileName:     "kube-scheduler",
+		CN:           "system:kube-scheduler",
+		CA:           kubeCAConf,
+		Dir:          path,
+		CAConfigPath: caConfigPath,
+	}
+	err = createCert(kubeSchedCertConfig)
 	if err != nil {
 		return err
 	}
@@ -74,29 +130,25 @@ func doCreate(ctx *cli.Context) error {
 	// TODO: controller cert
 	// TODO: worker cert
 
-	// kube-controler-manager
-	err = createCert(path, "ca", "kube-controller-manager", certJSON("kube-controller-manager", "kube-controller-manager"))
-	if err != nil {
-		return err
-	}
-
-	// kube-scheduler
-	err = createCert(path, "ca", "kube-scheduler", certJSON("system:kube-scheduler", "system:kube-scheduler"))
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func createCA(dir, caName string, data []byte) error {
+type CAConfig struct {
+	Name string
+	CN   string
+	Dir  string
+}
+
+func CreateCA(conf CAConfig) error {
 	cfsslCmd := exec.Command("cfssl", "gencert", "-initca", "-")
-	cfsslCmd.Dir = dir
+	cfsslCmd.Dir = conf.Dir
 
 	pipe, err := cfsslCmd.StdinPipe()
 	if err != nil {
 		return errors.Wrap(err, "error creating stdin pipe")
 	}
+
+	data := CAJSON(conf.CN)
 
 	_, err = pipe.Write(data)
 	if err != nil {
@@ -112,9 +164,9 @@ func createCA(dir, caName string, data []byte) error {
 		return err
 	}
 	defer cfsslOut.Close()
-	cfssljsonCmd := exec.Command("cfssljson", "-bare", caName)
+	cfssljsonCmd := exec.Command("cfssljson", "-bare", conf.Name)
 	cfssljsonCmd.Stdin = cfsslOut
-	cfssljsonCmd.Dir = dir
+	cfssljsonCmd.Dir = conf.Dir
 
 	err = cfsslCmd.Start()
 	if err != nil {
@@ -133,7 +185,7 @@ func createCA(dir, caName string, data []byte) error {
 	return nil
 }
 
-func caJSON(CN string) []byte {
+func CAJSON(CN string) []byte {
 	return []byte(fmt.Sprintf(`{
   "CN": "%s",
   "key": {
@@ -152,7 +204,7 @@ func caJSON(CN string) []byte {
 }`, CN, CN))
 }
 
-func writeCAConfig(dir string) (fullPath string, err error) {
+func WriteCAConfig(dir string) (fullPath string, err error) {
 	fullPath = path.Join(dir, "ca-config.json")
 	err = ioutil.WriteFile(fullPath, []byte(`{
   "signing": {
@@ -174,10 +226,26 @@ func writeCAConfig(dir string) (fullPath string, err error) {
 	return fullPath, nil
 }
 
-func createCert(dir, caName, name string, data []byte) error {
-	caPath := caName + ".pem"
-	caKeyPath := caName + "-key.pem"
-	caConfigPath := "ca-config.json"
+type CertConfig struct {
+	Name string
+
+	// FileName overrides Name for saving the file (optional, use if Name is
+	// not a valid file name)
+	FileName     string
+	CN           string
+	CA           CAConfig
+	Dir          string
+	CAConfigPath string
+
+	JSONOverride []byte
+}
+
+func createCert(conf CertConfig) error {
+	if conf.FileName == "" {
+		conf.FileName = conf.Name
+	}
+	caPath := path.Join(conf.CA.Dir, conf.CA.Name+".pem")
+	caKeyPath := path.Join(conf.CA.Dir, conf.CA.Name+"-key.pem")
 	profile := "kubernetes"
 
 	cfsslCmd := exec.Command(
@@ -185,15 +253,22 @@ func createCert(dir, caName, name string, data []byte) error {
 		"gencert",
 		"-ca="+caPath,
 		"-ca-key="+caKeyPath,
-		"-config="+caConfigPath,
+		"-config="+conf.CAConfigPath,
 		"-profile="+profile,
 		"-",
 	)
-	cfsslCmd.Dir = dir
+	cfsslCmd.Dir = conf.Dir
 
 	pipe, err := cfsslCmd.StdinPipe()
 	if err != nil {
 		return errors.Wrap(err, "error creating stdin pipe")
+	}
+
+	var data []byte
+	if len(conf.JSONOverride) != 0 {
+		data = conf.JSONOverride
+	} else {
+		data = certJSON(conf.CN, conf.Name)
 	}
 
 	_, err = pipe.Write(data)
@@ -213,8 +288,8 @@ func createCert(dir, caName, name string, data []byte) error {
 		return errors.Wrap(err, "cfssl error generating cert")
 	}
 
-	cfssljsonCmd := exec.Command("cfssljson", "-bare", name)
-	cfssljsonCmd.Dir = dir
+	cfssljsonCmd := exec.Command("cfssljson", "-bare", conf.FileName)
+	cfssljsonCmd.Dir = conf.Dir
 
 	jsonPipe, err := cfssljsonCmd.StdinPipe()
 	if err != nil {
