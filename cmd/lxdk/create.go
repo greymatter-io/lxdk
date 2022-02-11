@@ -25,7 +25,7 @@ func doCreate(ctx *cli.Context) error {
 		return errors.New("must supply cluster name")
 	}
 
-	path := path.Join(cacheDir, ctx.Args().First(), "certificates")
+	path := path.Join(cacheDir, clusterName, "certificates")
 	err := os.MkdirAll(path, 0777)
 	if err != nil {
 		return errors.Wrap(err, "error creating certificates dir")

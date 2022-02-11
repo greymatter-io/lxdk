@@ -9,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// TestCreateCACreatesObjects ensure that the CreateCA command creates the
+// expected files for a given input.
 func TestCreateCACreatesObjects(t *testing.T) {
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {
@@ -41,6 +43,8 @@ func TestCreateCACreatesObjects(t *testing.T) {
 	}
 }
 
+// TestCreateCertCreatesObjects checks that the CreateCert command creates the
+// expected files for a given input.
 func TestCreateCertCreatesObjects(t *testing.T) {
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {

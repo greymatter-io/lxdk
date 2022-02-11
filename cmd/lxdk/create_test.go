@@ -13,6 +13,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// TestCertChains tests that the generated certs are signed by the proper
+// generated CA.
 func TestCertChains(t *testing.T) {
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {
@@ -24,8 +26,7 @@ func TestCertChains(t *testing.T) {
 	ctx := cli.NewContext(cli.NewApp(), flags, &cli.Context{})
 
 	os.Setenv("LXDK_CACHE", tmpDir)
-
-	app.RunContext(ctx.Context, []string{"lxdk", "create", "test", "--cache", tmpDir})
+	app.RunContext(ctx.Context, []string{"lxdk", "create", "test"})
 
 	caPath := path.Join(tmpDir, "test", "certificates", "ca.pem")
 	caAggregationPath := path.Join(tmpDir, "test", "certificates", "ca-aggregation.pem")
