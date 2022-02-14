@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -14,78 +13,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func TestCreateCACreatesObjects(t *testing.T) {
-	caName := "test-ca"
-	caDN := "Tests"
-
-	tmpDir, cleanup, err := testutils.TempDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cleanup()
-
-	err = createCA(tmpDir, caName, caJSON(caDN))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	objects := []string{caName + ".csr", caName + "-key.pem", caName + ".pem"}
-	for _, filename := range objects {
-		t.Log("checking file: " + filename)
-
-		fullPath := path.Join(tmpDir, filename)
-		_, err = os.Stat(fullPath)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				t.Fatalf("file %s was not created", filename)
-			}
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestCreateCertCreatesObjects(t *testing.T) {
-	certName := "test-cert"
-	caName := "test-ca"
-	caDN := "Tests"
-	name := certName
-
-	tmpDir, cleanup, err := testutils.TempDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cleanup()
-
-	err = createCA(tmpDir, caName, caJSON(caDN))
-	if err != nil {
-		t.Fatal("error creating CA before creating cert:", err)
-	}
-
-	_, err = writeCAConfig(tmpDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = createCert(tmpDir, caName, name, certJSON(certName, name))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	objects := []string{certName + ".csr", certName + "-key.pem", certName + ".pem"}
-	for _, filename := range objects {
-		t.Log("checking file: " + filename)
-
-		fullPath := path.Join(tmpDir, filename)
-		_, err = os.Stat(fullPath)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				t.Fatalf("file %s was not created", filename)
-			}
-			t.Fatal(err)
-		}
-	}
-}
-
+// TestCertChains tests that the generated certs are signed by the proper
+// generated CA.
 func TestCertChains(t *testing.T) {
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {
@@ -97,8 +26,7 @@ func TestCertChains(t *testing.T) {
 	ctx := cli.NewContext(cli.NewApp(), flags, &cli.Context{})
 
 	os.Setenv("LXDK_CACHE", tmpDir)
-
-	app.RunContext(ctx.Context, []string{"lxdk", "create", "test", "--cache", tmpDir})
+	app.RunContext(ctx.Context, []string{"lxdk", "create", "test"})
 
 	caPath := path.Join(tmpDir, "test", "certificates", "ca.pem")
 	caAggregationPath := path.Join(tmpDir, "test", "certificates", "ca-aggregation.pem")
