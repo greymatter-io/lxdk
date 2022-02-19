@@ -28,6 +28,12 @@ var app = &cli.App{
 			Value:   fmt.Sprintf("%s/.cache/lxdk", os.Getenv("HOME")),
 			EnvVars: []string{"LXDK_CACHE"},
 		},
+		&cli.StringFlag{
+			Name:    "lxdconfig",
+			Usage:   "Path to lxd config file",
+			Value:   fmt.Sprintf("%s/.config/lxc/config.yml", os.Getenv("HOME")),
+			EnvVars: []string{"LXDK_LXD_CONFIG"},
+		},
 	},
 	Commands: []*cli.Command{
 		upCmd,
