@@ -16,6 +16,11 @@ cmd_build() {
          --mod=vendor $MAIN_PACKAGE
 }
 
+if [ $# -eq "0" ]; then
+    cmd_build
+    exit 0
+fi
+
 case $1 in
 build)
   ./scripts/bootstrap
