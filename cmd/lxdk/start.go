@@ -14,12 +14,12 @@ var startCmd = &cli.Command{
 }
 
 func doStart(ctx *cli.Context) error {
-	clusterConfig, err := config.ClusterConfigFromContext(ctx)
+	state, err := config.ClusterStateFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, container := range clusterConfig.Containers {
+	for _, container := range state.Containers {
 		err = startContainer(container)
 		if err != nil {
 			return err

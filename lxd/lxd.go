@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var snapSocketPath = "/var/snap/lxd/common/lxd/unix.socket"
+const snapSocketPath = "/var/snap/lxd/common/lxd/unix.socket"
 
 func InstanceServerConnect() (lxd.InstanceServer, error) {
 	var is lxd.InstanceServer

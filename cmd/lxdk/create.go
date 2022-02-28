@@ -26,21 +26,28 @@ var (
 				Usage: "lxd storage pool driver to use",
 				Value: "btrfs",
 			},
+			&cli.StringFlag{
+				Name:  "storage-pool",
+				Usage: "lxd storage pool use, overrides storage pool creation",
+				Value: "btrfs",
+			},
 		},
 		Action: doCreate,
 	}
 )
 
 func doCreate(ctx *cli.Context) error {
-	clusterConfig := config.ClusterConfig{}
+	var state config.ClusterState
+	state.StorageDriver = ctx.String("storage-driver")
+	state.StoragePool = ctx.String("storage_pool")
 
 	cacheDir := ctx.String("cache")
 
-	clusterName := ctx.Args().First()
-	if clusterName == "" {
+	if ctx.Args().Len() == 0 {
 		return errors.New("must supply cluster name")
 	}
-	clusterConfig.Name = clusterName
+	clusterName := ctx.Args().First()
+	state.Name = clusterName
 
 	path := path.Join(cacheDir, clusterName)
 
@@ -49,45 +56,43 @@ func doCreate(ctx *cli.Context) error {
 		return errors.Errorf("cluster %s already exists at path %s", clusterName, path)
 	}
 
-	err = config.WriteClusterConfig(ctx, clusterConfig)
-	if err != nil {
-		return errors.Wrap(err, "error reading cluster config")
-	}
-
-	err = createNetworkFromContext(ctx)
+	networkID, err := createNetwork(state)
 	if err != nil {
 		return err
 	}
+	state.NetworkID = networkID
 
-	err = createStoragePoolFromContext(ctx)
+	pool, err := createStoragePool(state)
 	if err != nil {
 		return err
 	}
+	state.StoragePool = pool
 
-	err = createContainersFromContext(ctx)
+	containers, err := createContainers(state)
 	if err != nil {
 		return err
 	}
+	state.Containers = append(state.Containers, containers...)
 
 	err = createCerts(path)
 	if err != nil {
 		return err
 	}
 
+	err = config.WriteClusterState(ctx, state)
+	if err != nil {
+		return fmt.Errorf("error reading cluster config: %w", err)
+	}
+
 	return nil
 }
 
-func createNetworkFromContext(ctx *cli.Context) error {
-	clusterConfig, err := config.ClusterConfigFromContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	networkID := "lxdk-" + clusterConfig.Name
+func createNetwork(state config.ClusterState) (string, error) {
+	networkID := "lxdk-" + state.Name
 
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	networkPost := api.NetworksPost{}
@@ -95,20 +100,14 @@ func createNetworkFromContext(ctx *cli.Context) error {
 	networkPost.Config = map[string]string{"ipv6.address": "none"}
 	is.CreateNetwork(networkPost)
 
-	clusterConfig.NetworkID = networkID
-	err = config.WriteClusterConfig(ctx, clusterConfig)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return networkID, err
 }
 
 func createCerts(cacheDir string) error {
 	path := path.Join(cacheDir, "certificates")
 	err := os.MkdirAll(path, 0777)
 	if err != nil {
-		return errors.Wrap(err, "error creating certificates dir")
+		return fmt.Errorf("error creating certificates dir: %w", err)
 	}
 
 	// k8s CA
@@ -210,61 +209,52 @@ func createCerts(cacheDir string) error {
 	return nil
 }
 
-func createStoragePoolFromContext(ctx *cli.Context) error {
+func createStoragePool(state config.ClusterState) (string, error) {
+	// TODO: this uses the default lxd config, should not do that
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
-		return err
-	}
-
-	clusterConfig, err := config.ClusterConfigFromContext(ctx)
-	if err != nil {
-		return err
+		return "", err
 	}
 
 	stPoolPost := api.StoragePoolsPost{
-		Name:   clusterConfig.Name,
-		Driver: ctx.String("storage-driver"),
+		Name:   "lxdk-" + state.Name,
+		Driver: state.StorageDriver,
 	}
 	err = is.CreateStoragePool(stPoolPost)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return stPoolPost.Name, nil
 }
 
-func createContainersFromContext(ctx *cli.Context) error {
+func createContainers(state config.ClusterState) ([]string, error) {
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
-		return err
-	}
-
-	clusterConfig, err := config.ClusterConfigFromContext(ctx)
-	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// TODO: modify this later so all workers have unique IDs
-	for _, image := range []string{"etcd", "controller", "worker"} {
-		containerName := fmt.Sprintf("lxdk-%s-%s", clusterConfig.Name, image)
-		err = createContainer(image, is, clusterConfig)
+	containers := make([]string, 3)
+	for i, image := range []string{"etcd", "controller", "worker"} {
+		containerName, err := createContainer(image, is, state)
+
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		clusterConfig.Containers = append(clusterConfig.Containers, containerName)
+		containers[i] = containerName
 	}
 
-	err = config.WriteClusterConfig(ctx, clusterConfig)
-	return err
+	return containers, err
 }
 
 // TODO: will have to put this somewhere else later to create workers
-func createContainer(imageName string, is lxdclient.InstanceServer, clusterConfig config.ClusterConfig) error {
+func createContainer(imageName string, is lxdclient.InstanceServer, state config.ClusterState) (string, error) {
 	// TODO: kubdee applies a default profile to everything
 
 	conf := api.InstancesPost{
-		Name: fmt.Sprintf("lxdk-%s-%s", clusterConfig.Name, imageName),
+		Name: fmt.Sprintf("lxdk-%s-%s", state.Name, imageName),
 		Source: api.InstanceSource{
 			Type:  "image",
 			Alias: "kubedee-" + imageName,
@@ -274,15 +264,15 @@ func createContainer(imageName string, is lxdclient.InstanceServer, clusterConfi
 	conf.Devices = map[string]map[string]string{
 		"root": {
 			"type": "disk",
-			"pool": clusterConfig.Name,
+			"pool": state.StoragePool,
 			"path": "/",
 		},
 	}
 
 	// add network to container
-	net, _, err := is.GetNetwork(clusterConfig.NetworkID)
+	net, _, err := is.GetNetwork(state.NetworkID)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var device map[string]string
@@ -308,13 +298,13 @@ func createContainer(imageName string, is lxdclient.InstanceServer, clusterConfi
 
 	op, err := is.CreateInstance(conf)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = op.Wait()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return conf.Name, nil
 }

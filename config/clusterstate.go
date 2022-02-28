@@ -9,30 +9,33 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type ClusterConfig struct {
+type ClusterState struct {
 	Name       string   `toml:"name"`
 	NetworkID  string   `toml:"network_id"`
 	Containers []string `toml:"containers"`
+
+	StorageDriver string `toml:"storage_driver"`
+	StoragePool   string `toml:"storage_pool"`
 }
 
-func ClusterConfigFromContext(ctx *cli.Context) (ClusterConfig, error) {
-	var conf ClusterConfig
+func ClusterStateFromContext(ctx *cli.Context) (ClusterState, error) {
+	var state ClusterState
 
 	clusterName := ctx.Args().First()
 	if clusterName == "" {
-		return conf, errors.New("must supply cluster name")
+		return state, errors.New("must supply cluster name")
 	}
 
 	clusterConfigPath := path.Join(ctx.String("cache"), clusterName, "config.toml")
-	_, err := toml.DecodeFile(clusterConfigPath, &conf)
+	_, err := toml.DecodeFile(clusterConfigPath, &state)
 	if err != nil {
-		return conf, errors.Wrap(err, "error loading config file")
+		return state, errors.Wrap(err, "error loading config file")
 	}
 
-	return conf, nil
+	return state, nil
 }
 
-func WriteClusterConfig(ctx *cli.Context, conf ClusterConfig) error {
+func WriteClusterState(ctx *cli.Context, state ClusterState) error {
 	clusterName := ctx.Args().First()
 	if clusterName == "" {
 		return errors.New("must supply cluster name")
@@ -51,7 +54,7 @@ func WriteClusterConfig(ctx *cli.Context, conf ClusterConfig) error {
 	}
 
 	enc := toml.NewEncoder(w)
-	err = enc.Encode(conf)
+	err = enc.Encode(state)
 	if err != nil {
 		return err
 	}

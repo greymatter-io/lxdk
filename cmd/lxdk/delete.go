@@ -26,17 +26,22 @@ func doDelete(ctx *cli.Context) error {
 	}
 	path := path.Join(cacheDir, clusterName)
 
-	err := deleteContainersFromContext(ctx)
+	state, err := config.ClusterStateFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = deleteStoragePoolFromContext(ctx)
+	err = deleteContainers(state)
 	if err != nil {
 		return err
 	}
 
-	err = deleteNetworkFromContext(ctx)
+	err = deleteStoragePool(state)
+	if err != nil {
+		return err
+	}
+
+	err = deleteNetwork(state)
 	if err != nil {
 		return err
 	}
@@ -49,17 +54,12 @@ func doDelete(ctx *cli.Context) error {
 	return nil
 }
 
-func deleteNetworkFromContext(ctx *cli.Context) error {
-	clusterConfig, err := config.ClusterConfigFromContext(ctx)
-	if err != nil {
-		return err
-	}
-
+func deleteNetwork(state config.ClusterState) error {
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
 	}
-	err = is.DeleteNetwork(clusterConfig.NetworkID)
+	err = is.DeleteNetwork(state.NetworkID)
 	if err != nil {
 		return err
 	}
@@ -67,17 +67,12 @@ func deleteNetworkFromContext(ctx *cli.Context) error {
 	return nil
 }
 
-func deleteStoragePoolFromContext(ctx *cli.Context) error {
-	clusterConfig, err := config.ClusterConfigFromContext(ctx)
-	if err != nil {
-		return err
-	}
-
+func deleteStoragePool(state config.ClusterState) error {
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
 	}
-	err = is.DeleteStoragePool(clusterConfig.Name)
+	err = is.DeleteStoragePool(state.Name)
 	if err != nil {
 		return err
 	}
@@ -85,12 +80,7 @@ func deleteStoragePoolFromContext(ctx *cli.Context) error {
 	return nil
 }
 
-func deleteContainersFromContext(ctx *cli.Context) error {
-	clusterConfig, err := config.ClusterConfigFromContext(ctx)
-	if err != nil {
-		return err
-	}
-
+func deleteContainers(state config.ClusterState) error {
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
@@ -100,7 +90,7 @@ func deleteContainersFromContext(ctx *cli.Context) error {
 		Action:  "stop",
 		Timeout: -1,
 	}
-	for _, name := range clusterConfig.Containers {
+	for _, name := range state.Containers {
 		op, err := is.UpdateInstanceState(name, reqState, "")
 		if err != nil {
 			return err
