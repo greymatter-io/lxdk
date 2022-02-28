@@ -29,7 +29,6 @@ var (
 			&cli.StringFlag{
 				Name:  "storage-pool",
 				Usage: "lxd storage pool use, overrides storage pool creation",
-				Value: "btrfs",
 			},
 		},
 		Action: doCreate,
@@ -62,11 +61,12 @@ func doCreate(ctx *cli.Context) error {
 	}
 	state.NetworkID = networkID
 
-	pool, err := createStoragePool(state)
-	if err != nil {
-		return err
+	if state.StoragePool == "" {
+		state.StoragePool, err = createStoragePool(state)
+		if err != nil {
+			return err
+		}
 	}
-	state.StoragePool = pool
 
 	containers, err := createContainers(state)
 	if err != nil {
@@ -210,7 +210,6 @@ func createCerts(cacheDir string) error {
 }
 
 func createStoragePool(state config.ClusterState) (string, error) {
-	// TODO: this uses the default lxd config, should not do that
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return "", err

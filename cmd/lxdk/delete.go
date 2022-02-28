@@ -12,8 +12,15 @@ import (
 )
 
 var deleteCmd = &cli.Command{
-	Name:   "delete",
-	Usage:  "delete a cluster",
+	Name:  "delete",
+	Usage: "delete a cluster",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "delete-storage",
+			Usage: "whether or not to delete the associated storage pool",
+			Value: true,
+		},
+	},
 	Action: doDelete,
 }
 
@@ -36,9 +43,11 @@ func doDelete(ctx *cli.Context) error {
 		return err
 	}
 
-	err = deleteStoragePool(state)
-	if err != nil {
-		return err
+	if ctx.Bool("delete-storage") {
+		err = deleteStoragePool(state)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = deleteNetwork(state)
@@ -72,7 +81,7 @@ func deleteStoragePool(state config.ClusterState) error {
 	if err != nil {
 		return err
 	}
-	err = is.DeleteStoragePool(state.Name)
+	err = is.DeleteStoragePool(state.StoragePool)
 	if err != nil {
 		return err
 	}
