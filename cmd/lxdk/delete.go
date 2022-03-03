@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"path"
 
@@ -18,6 +19,11 @@ var deleteCmd = &cli.Command{
 		&cli.BoolFlag{
 			Name:  "delete-storage",
 			Usage: "whether or not to delete the associated storage pool",
+			Value: true,
+		},
+		&cli.BoolFlag{
+			Name:  "delete-network",
+			Usage: "whether or not to delete the associated network",
 			Value: true,
 		},
 	},
@@ -50,9 +56,11 @@ func doDelete(ctx *cli.Context) error {
 		}
 	}
 
-	err = deleteNetwork(state)
-	if err != nil {
-		return err
+	if ctx.Bool("delete-network") {
+		err = deleteNetwork(state)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = os.RemoveAll(path)
@@ -107,7 +115,7 @@ func deleteContainers(state config.ClusterState) error {
 
 		err = op.Wait()
 		if err != nil {
-			return err
+			log.Println("instance is already stopped, continuing")
 		}
 
 		op, err = is.DeleteInstance(name)

@@ -14,8 +14,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-//kubedee [options] create <cluster name>            create a cluster
-
 var (
 	createCmd = &cli.Command{
 		Name:  "create",
@@ -30,6 +28,10 @@ var (
 				Name:  "storage-pool",
 				Usage: "lxd storage pool use, overrides storage pool creation",
 			},
+			&cli.StringFlag{
+				Name:  "network",
+				Usage: "network id of lxd network to use, overrides network creation",
+			},
 		},
 		Action: doCreate,
 	}
@@ -39,6 +41,7 @@ func doCreate(ctx *cli.Context) error {
 	var state config.ClusterState
 	state.StorageDriver = ctx.String("storage-driver")
 	state.StoragePool = ctx.String("storage_pool")
+	state.NetworkID = ctx.String("network")
 
 	cacheDir := ctx.String("cache")
 
@@ -55,11 +58,13 @@ func doCreate(ctx *cli.Context) error {
 		return errors.Errorf("cluster %s already exists at path %s", clusterName, path)
 	}
 
-	networkID, err := createNetwork(state)
-	if err != nil {
-		return err
+	if state.NetworkID == "" {
+		networkID, err := createNetwork(state)
+		if err != nil {
+			return err
+		}
+		state.NetworkID = networkID
 	}
-	state.NetworkID = networkID
 
 	if state.StoragePool == "" {
 		state.StoragePool, err = createStoragePool(state)
@@ -201,10 +206,6 @@ func createCerts(cacheDir string) error {
 	if err != nil {
 		return err
 	}
-
-	// TODO: etcd cert
-	// TODO: controller cert
-	// TODO: worker cert
 
 	return nil
 }

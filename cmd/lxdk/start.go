@@ -13,6 +13,10 @@ var startCmd = &cli.Command{
 	Action: doStart,
 }
 
+// TODO: etcd cert
+// TODO: controller cert
+// TODO: worker cert
+
 func doStart(ctx *cli.Context) error {
 	state, err := config.ClusterStateFromContext(ctx)
 	if err != nil {
