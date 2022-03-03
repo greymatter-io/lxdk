@@ -9,6 +9,8 @@ import (
 	"path"
 	"testing"
 
+	"github.com/greymatter-io/lxdk/config"
+	"github.com/greymatter-io/lxdk/lxd"
 	"github.com/greymatter-io/lxdk/testutils"
 	"github.com/urfave/cli/v2"
 )
@@ -26,7 +28,17 @@ func TestCertChains(t *testing.T) {
 	ctx := cli.NewContext(cli.NewApp(), flags, &cli.Context{})
 
 	os.Setenv("LXDK_CACHE", tmpDir)
-	app.RunContext(ctx.Context, []string{"lxdk", "create", "test"})
+	err = app.RunContext(ctx.Context, []string{"lxdk", "create", "test"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		err = app.RunContext(ctx.Context, []string{"lxdk", "delete", "test"})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	caPath := path.Join(tmpDir, "test", "certificates", "ca.pem")
 	caAggregationPath := path.Join(tmpDir, "test", "certificates", "ca-aggregation.pem")
@@ -80,6 +92,32 @@ func testCertSigned(certPath, caPath string, t *testing.T) {
 	}
 
 	if _, err := cert.Verify(opts); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCreateNetwork(t *testing.T) {
+	is, err := lxd.InstanceServerConnect()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	state := config.ClusterState{
+		Name: "test",
+	}
+
+	networkID, err := createNetwork(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = is.GetNetwork(networkID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = is.DeleteNetwork(networkID)
+	if err != nil {
 		t.Fatal(err)
 	}
 }
