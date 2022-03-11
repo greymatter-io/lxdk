@@ -127,17 +127,14 @@ func GetContainerIP(name string, is lxd.InstanceServer) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error getting instance: %w", err)
 	}
-	fmt.Println(in.IsActive())
 
 	var ips []string
 	for _, net := range in.State.Network {
-		fmt.Printf("%+v\n", net)
 		if net.Type == "loopback" {
 			continue
 		}
 
 		for _, addr := range net.Addresses {
-			fmt.Println(addr)
 			if addr.Scope == "link" || addr.Scope == "local" {
 				continue
 			}

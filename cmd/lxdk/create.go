@@ -207,6 +207,20 @@ func createCerts(cacheDir string) error {
 		return err
 	}
 
+	// kube-proxy
+	kubeProxyCertConfig := certs.CertConfig{
+		Name:         "system:node-proxier",
+		FileName:     "kube-proxy",
+		CN:           "system:kube-proxy",
+		CA:           kubeCAConf,
+		Dir:          path,
+		CAConfigPath: caConfigPath,
+	}
+	err = certs.CreateCert(kubeProxyCertConfig)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

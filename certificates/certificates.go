@@ -113,6 +113,7 @@ type CertConfig struct {
 	CA           CAConfig
 	Dir          string
 	CAConfigPath string
+	ExtraOpts    map[string]string
 
 	JSONOverride []byte
 }
@@ -125,14 +126,24 @@ func CreateCert(conf CertConfig) error {
 	caKeyPath := path.Join(conf.CA.Dir, conf.CA.Name+"-key.pem")
 	profile := "kubernetes"
 
+	args := make([]string, 6+len(conf.ExtraOpts))
+	args = []string{
+		"gencert",
+		"-ca=" + caPath,
+		"-ca-key=" + caKeyPath,
+		"-config=" + conf.CAConfigPath,
+		"-profile=" + profile,
+	}
+	if len(conf.ExtraOpts) > 0 {
+		for k, v := range conf.ExtraOpts {
+			args = append(args, fmt.Sprintf("-%s=%s", k, v))
+		}
+	}
+	args = append(args, "-")
+
 	cfsslCmd := exec.Command(
 		"cfssl",
-		"gencert",
-		"-ca="+caPath,
-		"-ca-key="+caKeyPath,
-		"-config="+conf.CAConfigPath,
-		"-profile="+profile,
-		"-",
+		args...,
 	)
 	cfsslCmd.Dir = conf.Dir
 
