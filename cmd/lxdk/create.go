@@ -7,8 +7,8 @@ import (
 
 	certs "github.com/greymatter-io/lxdk/certificates"
 	"github.com/greymatter-io/lxdk/config"
+	"github.com/greymatter-io/lxdk/containers"
 	"github.com/greymatter-io/lxdk/lxd"
-	lxdclient "github.com/lxc/lxd/client"
 	"github.com/lxc/lxd/shared/api"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -235,76 +235,22 @@ func createContainers(state config.ClusterState) ([]string, error) {
 	}
 
 	// TODO: modify this later so all workers have unique IDs
-	containers := make([]string, 3)
+	created := make([]string, 3)
 	for i, image := range []string{"etcd", "controller", "worker"} {
-		containerName, err := createContainer(image, is, state)
+		conf := containers.ContainerConfig{
+			ImageName:   image,
+			ClusterName: state.Name,
+			StoragePool: state.StoragePool,
+			NetworkID:   state.NetworkID,
+		}
+		containerName, err := containers.CreateContainer(conf, is)
 
 		if err != nil {
 			return nil, err
 		}
 
-		containers[i] = containerName
+		created[i] = containerName
 	}
 
-	return containers, err
-}
-
-// TODO: will have to put this somewhere else later to create workers
-func createContainer(imageName string, is lxdclient.InstanceServer, state config.ClusterState) (string, error) {
-	// TODO: kubdee applies a default profile to everything
-
-	conf := api.InstancesPost{
-		Name: fmt.Sprintf("lxdk-%s-%s", state.Name, imageName),
-		Source: api.InstanceSource{
-			Type:  "image",
-			Alias: "kubedee-" + imageName,
-		},
-		Type: "container",
-	}
-	conf.Devices = map[string]map[string]string{
-		"root": {
-			"type": "disk",
-			"pool": state.StoragePool,
-			"path": "/",
-		},
-	}
-
-	// add network to container
-	net, _, err := is.GetNetwork(state.NetworkID)
-	if err != nil {
-		return "", err
-	}
-
-	var device map[string]string
-	if net.Managed && is.HasExtension("instance_nic_network") {
-		device = map[string]string{
-			"type":    "nic",
-			"network": net.Name,
-		}
-	} else {
-		device = map[string]string{
-			"type":    "nic",
-			"nictype": "macvlan",
-			"parent":  net.Name,
-		}
-
-		if net.Type == "bridge" {
-			device["nictype"] = "bridged"
-		}
-	}
-	device["name"] = "eth0"
-
-	conf.Devices["eth0"] = device
-
-	op, err := is.CreateInstance(conf)
-	if err != nil {
-		return "", err
-	}
-
-	err = op.Wait()
-	if err != nil {
-		return "", err
-	}
-
-	return conf.Name, nil
+	return created, err
 }
