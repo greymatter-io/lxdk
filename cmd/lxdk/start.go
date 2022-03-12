@@ -97,6 +97,7 @@ func doStart(ctx *cli.Context) error {
 			}
 		}
 
+		// TDOO: probably going to have to move this out
 		// worker cert
 		if strings.Contains(container, "worker") {
 			workerCertConfig := certs.CertConfig{
