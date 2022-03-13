@@ -2,7 +2,7 @@
 Description=Kubernetes API Server
 
 [Service]
-EnvironmentFile=
+EnvironmentFile=/etc/lxdk/env
 ExecStart=/usr/local/bin/kube-apiserver \
   --allow-privileged=true \
   --apiserver-count=3 \

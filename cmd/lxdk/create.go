@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/greymatter-io/lxdk/config"
 	"github.com/greymatter-io/lxdk/containers"
 	"github.com/greymatter-io/lxdk/lxd"
+	lxdclient "github.com/lxc/lxd/client"
 	"github.com/lxc/lxd/shared/api"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -43,6 +45,11 @@ func doCreate(ctx *cli.Context) error {
 	state.StoragePool = ctx.String("storage-pool")
 	state.NetworkID = ctx.String("network")
 
+	is, _, err := lxd.InstanceServerConnect()
+	if err != nil {
+		return err
+	}
+
 	cacheDir := ctx.String("cache")
 
 	if ctx.Args().Len() == 0 {
@@ -53,13 +60,13 @@ func doCreate(ctx *cli.Context) error {
 
 	path := path.Join(cacheDir, clusterName)
 
-	_, err := os.Stat(path)
+	_, err = os.Stat(path)
 	if err == nil {
 		return errors.Errorf("cluster %s already exists at path %s", clusterName, path)
 	}
 
 	if state.NetworkID == "" {
-		networkID, err := createNetwork(state)
+		networkID, err := createNetwork(state, is)
 		if err != nil {
 			return err
 		}
@@ -67,17 +74,44 @@ func doCreate(ctx *cli.Context) error {
 	}
 
 	if state.StoragePool == "" {
-		state.StoragePool, err = createStoragePool(state)
+		state.StoragePool, err = createStoragePool(state, is)
 		if err != nil {
 			return err
 		}
 	}
+	log.Default().Println("using storage pool:", state.StoragePool)
 
-	containers, err := createContainers(state)
+	profs, err := is.GetProfileNames()
 	if err != nil {
 		return err
 	}
-	state.Containers = append(state.Containers, containers...)
+
+	profExists := false
+	for _, prof := range profs {
+		if prof == "lxdk" {
+			profExists = true
+			break
+		}
+	}
+
+	if !profExists {
+		if err = containers.CreateContainerProfile(is); err != nil {
+			return err
+		}
+	}
+
+	containerNames, err := createContainers(state, is)
+	if err != nil {
+		return err
+	}
+	state.EtcdContainerName = containerNames["etcd"]
+	state.ControllerContainerName = containerNames["controller"]
+	state.RegistryContainerName = containerNames["registry"]
+	state.WorkerContainerNames = []string{containerNames["worker"]}
+
+	for _, name := range containerNames {
+		state.Containers = append(state.Containers, name)
+	}
 
 	err = createCerts(path)
 	if err != nil {
@@ -92,19 +126,13 @@ func doCreate(ctx *cli.Context) error {
 	return nil
 }
 
-func createNetwork(state config.ClusterState) (string, error) {
+func createNetwork(state config.ClusterState, is lxdclient.InstanceServer) (string, error) {
 	networkID := "lxdk-" + state.Name
-
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return "", err
-	}
 
 	networkPost := api.NetworksPost{}
 	networkPost.Name = networkID
 	networkPost.Config = map[string]string{"ipv6.address": "none"}
-	is.CreateNetwork(networkPost)
-
+	err := is.CreateNetwork(networkPost)
 	return networkID, err
 }
 
@@ -157,7 +185,8 @@ func createCerts(cacheDir string) error {
 	// admin cert
 	adminCertConfig := certs.CertConfig{
 		Name:         "admin",
-		CN:           "system:masters",
+		CN:           "admin",
+		JSONOverride: certs.CertJSON("admin", "system:masters"),
 		CA:           kubeCAConf,
 		Dir:          path,
 		CAConfigPath: caConfigPath,
@@ -183,10 +212,11 @@ func createCerts(cacheDir string) error {
 	// kube-controler-manager
 	kubeConManConfig := certs.CertConfig{
 		Name:         "kube-controller-manager",
-		CN:           "kube-controller-manager",
+		CN:           "system:kube-controller-manager",
 		CA:           kubeCAConf,
 		Dir:          path,
 		CAConfigPath: caConfigPath,
+		JSONOverride: certs.CertJSON("system:kube-controller-manager", "system:kube-controller-manager"),
 	}
 	err = certs.CreateCert(kubeConManConfig)
 	if err != nil {
@@ -224,33 +254,21 @@ func createCerts(cacheDir string) error {
 	return nil
 }
 
-func createStoragePool(state config.ClusterState) (string, error) {
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return "", err
-	}
-
+func createStoragePool(state config.ClusterState, is lxdclient.InstanceServer) (string, error) {
 	stPoolPost := api.StoragePoolsPost{
 		Name:   "lxdk-" + state.Name,
 		Driver: state.StorageDriver,
 	}
-	err = is.CreateStoragePool(stPoolPost)
-	if err != nil {
+	if err := is.CreateStoragePool(stPoolPost); err != nil {
 		return "", err
 	}
 
 	return stPoolPost.Name, nil
 }
 
-func createContainers(state config.ClusterState) ([]string, error) {
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: modify this later so all workers have unique IDs
-	created := make([]string, 3)
-	for i, image := range []string{"etcd", "controller", "worker"} {
+func createContainers(state config.ClusterState, is lxdclient.InstanceServer) (map[string]string, error) {
+	created := make(map[string]string)
+	for _, image := range []string{"etcd", "controller", "worker", "registry"} {
 		conf := containers.ContainerConfig{
 			ImageName:   image,
 			ClusterName: state.Name,
@@ -263,8 +281,8 @@ func createContainers(state config.ClusterState) ([]string, error) {
 			return nil, err
 		}
 
-		created[i] = containerName
+		created[image] = containerName
 	}
 
-	return created, err
+	return created, nil
 }

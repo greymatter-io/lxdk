@@ -10,7 +10,7 @@ packer {
 variable "k8s_version" {
   type        = string
   description = "kubernetes version"
-  default     = "v1.21.1"
+  default     = "v1.23.1"
 }
 
 variable "crio_version" {
@@ -63,9 +63,13 @@ build {
   provisioner "shell" {
     inline = [
       "apt-get update -y",
-      "apt-get install -y libgpgme11 kitty-terminfo htop jq socat curl",
+      "apt-get install -y libgpgme11 kitty-terminfo htop jq socat curl iptables cloud-init",
       "rm -rf /var/cache/apt",
-    ]
+      "mkdir -p /opt/cni/bin",
+      "curl -fsSL https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz | tar -xzC /opt/cni/bin",
+      "curl -fsSLo /opt/cni/bin/flannel https://github.com/flannel-io/cni-plugin/releases/download/v1.0.1/flannel-amd64",
+      "chmod +x /opt/cni/bin/flannel",
+      ]
   }
 
   provisioner "shell" {
@@ -74,6 +78,7 @@ build {
     scripts = [
       "./scripts/download-k8s.sh",
       "./scripts/download-crio.sh",
+      "./scripts/download-registry.sh",
     ]
   }
 
@@ -109,8 +114,17 @@ build {
   # crio.service
   provisioner "file" {
     only        = ["lxd.kubedee-controller", "lxd.kubedee-worker"]
-    source      = "./templates/crio.service.pkrtpl.hcl"
+    source      = "./templates/crio/crio.service.pkrtpl.hcl"
     destination = "/etc/systemd/system/crio.service"
+  }
+
+  provisioner "shell" {
+    only             = ["lxd.kubedee-controller", "lxd.kubedee-worker"]
+    inline           = [
+        "sudo systemctl daemon-reload",
+        "sudo systemctl enable crio",
+        "sudo systemctl start crio",
+    ]
   }
 
   #kube-scheduler.service 
@@ -135,5 +149,34 @@ build {
     destination = "/etc/systemd/system/kube-controller-manager.service"
   }
 
-}
+  # oci-registry.service
+  provisioner "file" {
+    only        = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    source      = "./templates/oci-registry.service.pkrtpl.hcl"
+    destination = "/etc/systemd/system/oci-registry.service"
+  }
 
+  provisioner "shell" {
+    only        = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    inline      = [
+        "mkdir -p /etc/docker/registry",
+        "mkdir -p /etc/crio",
+        "mkdir -p /etc/kubernetes/config",
+    ]
+  }
+
+  # registry config.yml
+  provisioner "file" {
+    only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    source      = "./templates/registry_config.yml.pkrtpl.hcl"
+    destination = "/etc/docker/registry/config.yml"
+  }
+
+  # scheduler config
+  provisioner "file" {
+    only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    source      = "./templates/kube-scheduler.yaml.pkrtpl.hcl"
+    destination = "/etc/kubernetes/config/kube-scheduler.yaml"
+  }
+
+}

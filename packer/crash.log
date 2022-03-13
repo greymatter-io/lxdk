@@ -1,0 +1,541 @@
+2022/03/27 11:44:18 [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 [TRACE] discovering plugins in /usr/local/bin
+2022/03/27 11:44:18 [TRACE] discovering plugins in /home/critterjohnson/.config/packer/plugins
+2022/03/27 11:44:18 [TRACE] discovering plugins in .
+2022/03/27 11:44:18 [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 [TRACE] listing potential installations for "github.com/hashicorp/lxd" that match ">=1.0.0". plugingetter.ListInstallationsOptions{FromFolders:[]string{"/usr/local/bin/packer", ".", "/home/critterjohnson/.config/packer/plugins"}, BinaryInstallationOptions:plugingetter.BinaryInstallationOptions{APIVersionMajor:"5", APIVersionMinor:"0", OS:"linux", ARCH:"amd64", Ext:"", Checksummers:[]plugingetter.Checksummer{plugingetter.Checksummer{Type:"sha256", Hash:(*sha256.digest)(0xc0009d4280)}}}}
+2022/03/27 11:44:18 [TRACE] Found the following "github.com/hashicorp/lxd" installations: [{/home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 v1.0.0}]
+2022/03/27 11:44:18 [INFO] found external [-packer-default-plugin-name-] builders from lxd plugin
+2022/03/27 11:44:18 [TRACE] validateValue: not active for etcd_version, so skipping
+2022/03/27 11:44:18 [TRACE] validateValue: not active for k8s_version, so skipping
+2022/03/27 11:44:18 [TRACE] validateValue: not active for crio_version, so skipping
+2022/03/27 11:44:18 [TRACE] Starting external plugin /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 start builder -packer-default-plugin-name-
+2022/03/27 11:44:18 Starting plugin: /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 []string{"/home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64", "start", "builder", "-packer-default-plugin-name-"}
+2022/03/27 11:44:18 Waiting for RPC address for: /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 Plugin address: unix /tmp/packer-plugin203086850
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64: addr is /tmp/packer-plugin203086850
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 Serving a plugin connection...
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 [TRACE] starting builder -packer-default-plugin-name-
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin394275133
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin394275133
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:18 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin2935932999
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin2935932999
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:18 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin56363196
+2022/03/27 11:44:18 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin56363196
+2022/03/27 11:44:18 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:18 [TRACE] Starting external plugin /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 start builder -packer-default-plugin-name-
+2022/03/27 11:44:18 Starting plugin: /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 []string{"/home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64", "start", "builder", "-packer-default-plugin-name-"}
+2022/03/27 11:44:18 Waiting for RPC address for: /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 Plugin address: unix /tmp/packer-plugin096833328
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64: addr is /tmp/packer-plugin096833328
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 Serving a plugin connection...
+2022/03/27 11:44:18 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:18 [TRACE] starting builder -packer-default-plugin-name-
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin1420808664
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin1420808664
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin3873623267
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin3873623267
+2022/03/27 11:44:18 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:18 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin2441120651
+2022/03/27 11:44:18 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin2441120651
+2022/03/27 11:44:18 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:18 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:18 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:18 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin4043383353
+2022/03/27 11:44:18 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:18 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin4043383353
+2022/03/27 11:44:18 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:18 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:18 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:18 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin1369102127
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin1369102127
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:19 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin3836816305
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin3836816305
+2022/03/27 11:44:19 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:19 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin915084091
+2022/03/27 11:44:19 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin915084091
+2022/03/27 11:44:19 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:19 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:19 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin723162187
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin723162187
+2022/03/27 11:44:19 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:19 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:19 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin3019978112
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin3019978112
+2022/03/27 11:44:19 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:19 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin1095449424
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin1095449424
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin3576787794
+2022/03/27 11:44:19 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin3576787794
+2022/03/27 11:44:19 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:19 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:19 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin3593256690
+2022/03/27 11:44:19 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin3593256690
+2022/03/27 11:44:19 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:19 [TRACE] Starting external plugin /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 start builder -packer-default-plugin-name-
+2022/03/27 11:44:19 Starting plugin: /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 []string{"/home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64", "start", "builder", "-packer-default-plugin-name-"}
+2022/03/27 11:44:19 Waiting for RPC address for: /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64
+2022/03/27 11:44:19 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:19 Plugin address: unix /tmp/packer-plugin927296848
+2022/03/27 11:44:19 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:19 Waiting for connection...
+2022/03/27 11:44:19 Received unix RPC address for /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64: addr is /tmp/packer-plugin927296848
+2022/03/27 11:44:19 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:19 Serving a plugin connection...
+2022/03/27 11:44:19 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:19 [TRACE] starting builder -packer-default-plugin-name-
+2022/03/27 11:44:19 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:19 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:19 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:19 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:19 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:19 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin2712554780
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin2712554780
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:19 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin1010762748
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin1010762748
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:20 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin466076848
+2022/03/27 11:44:20 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin466076848
+2022/03/27 11:44:20 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:20 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin2911842221
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin2911842221
+2022/03/27 11:44:20 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:20 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin3354742076
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin3354742076
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:20 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin2164794791
+2022/03/27 11:44:20 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin2164794791
+2022/03/27 11:44:20 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-shell plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin2607197120
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Plugin address: unix /tmp/packer-plugin2607197120
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Waiting for connection...
+2022/03/27 11:44:20 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin3287944363
+2022/03/27 11:44:20 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin3287944363
+2022/03/27 11:44:20 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:20 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:20 [TRACE] Starting internal plugin packer-provisioner-file
+2022/03/27 11:44:20 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-file"}
+2022/03/27 11:44:20 Waiting for RPC address for: /usr/local/bin/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Packer version: 1.7.9 [go1.17.6 linux amd64]
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [WARN] Config file doesn't exist: /home/critterjohnson/.packerconfig
+2022/03/27 11:44:20 packer-provisioner-file plugin: [INFO] Setting cache directory: /home/critterjohnson/.cache/packer
+2022/03/27 11:44:20 packer-provisioner-file plugin: args: []string{"packer-provisioner-file"}
+2022/03/27 11:44:20 Received unix RPC address for /usr/local/bin/packer: addr is /tmp/packer-plugin2317717369
+2022/03/27 11:44:20 packer-provisioner-file plugin: Plugin address: unix /tmp/packer-plugin2317717369
+2022/03/27 11:44:20 packer-provisioner-file plugin: Waiting for connection...
+2022/03/27 11:44:20 packer-provisioner-file plugin: Serving a plugin connection...
+2022/03/27 11:44:20 ui: [1;32mlxd.kubedee-etcd: output will be in this color.[0m
+2022/03/27 11:44:20 ui: [1;36mlxd.kubedee-controller: output will be in this color.[0m
+2022/03/27 11:44:20 ui: [1;35mlxd.kubedee-worker: output will be in this color.[0m
+2022/03/27 11:44:20 ui: 
+2022/03/27 11:44:20 Build debug mode: false
+2022/03/27 11:44:20 Force build: false
+2022/03/27 11:44:20 On error: 
+2022/03/27 11:44:20 Waiting on builds to complete...
+2022/03/27 11:44:20 Starting build run: lxd.kubedee-worker
+2022/03/27 11:44:20 Starting build run: lxd.kubedee-etcd
+2022/03/27 11:44:20 Running builder: 
+2022/03/27 11:44:20 Running builder: 
+2022/03/27 11:44:20 [INFO] (telemetry) Starting builder lxd.kubedee-etcd
+2022/03/27 11:44:20 [INFO] (telemetry) Starting builder lxd.kubedee-worker
+2022/03/27 11:44:20 Starting build run: lxd.kubedee-controller
+2022/03/27 11:44:20 Running builder: 
+2022/03/27 11:44:20 [INFO] (telemetry) Starting builder lxd.kubedee-controller
+2022/03/27 11:44:20 ui: [1;32m==> lxd.kubedee-etcd: Creating container...[0m
+2022/03/27 11:44:20 ui: [1;35m==> lxd.kubedee-worker: Creating container...[0m
+2022/03/27 11:44:20 ui: [1;36m==> lxd.kubedee-controller: Creating container...[0m
+2022/03/27 11:44:20 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:20 Executing lxc command: []string{"launch", "--ephemeral=false", "--vm=false", "--profile=default", "images:ubuntu/20.04", "kubedee-etcd-20220327154418"}
+2022/03/27 11:44:20 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:20 Executing lxc command: []string{"launch", "--ephemeral=false", "--vm=false", "--profile=default", "images:ubuntu/20.04", "kubedee-worker-20220327154418"}
+2022/03/27 11:44:20 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:20 Executing lxc command: []string{"launch", "--ephemeral=false", "--vm=false", "--profile=default", "images:ubuntu/20.04", "kubedee-controller-20220327154418"}
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:24 stdout: Creating kubedee-etcd-20220327154418
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: Starting kubedee-etcd-20220327154418
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: Remapping container filesystem
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:24 stderr:
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:24 stdout: Creating kubedee-controller-20220327154418
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: Starting kubedee-controller-20220327154418
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: Remapping container filesystem
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:24 stderr:
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:24 stdout: Creating kubedee-worker-20220327154418
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: Starting kubedee-worker-20220327154418
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: Remapping container filesystem
+2022/03/27 11:44:24 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:24 stderr:
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 ui error: Cancelling build after receiving interrupt
+2022/03/27 11:44:27 Cancelling builder after context cancellation context canceled
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 Cancelling builder after context cancellation context canceled
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 Cancelling builder after context cancellation context canceled
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 1). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-shell plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-provisioner-file plugin: Received interrupt signal (count: 2). Ignoring.
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Sleeping for 3 seconds...
+2022/03/27 11:44:27 ui: [1;32m==> lxd.kubedee-etcd: Unregistering and deleting deleting container...[0m
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Executing lxc command: []string{"delete", "--force", "kubedee-etcd-20220327154418"}
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Sleeping for 3 seconds...
+2022/03/27 11:44:27 ui: [1;36m==> lxd.kubedee-controller: Unregistering and deleting deleting container...[0m
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Executing lxc command: []string{"delete", "--force", "kubedee-controller-20220327154418"}
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Sleeping for 3 seconds...
+2022/03/27 11:44:27 ui: [1;35m==> lxd.kubedee-worker: Unregistering and deleting deleting container...[0m
+2022/03/27 11:44:27 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:27 Executing lxc command: []string{"delete", "--force", "kubedee-worker-20220327154418"}
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:32 stdout:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:32 stderr:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: panic: interface conversion: interface {} is nil, not string
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: goroutine 13 [running]:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: github.com/hashicorp/packer-plugin-lxd/builder/lxd.(*Builder).Run(0xc000102300, 0x10e1588, 0xc00051a780, 0x10e5950, 0xc000815380, 0x10cf420, 0xc00011c420, 0xc000815230, 0xe04080, 0xc00011c400, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	github.com/hashicorp/packer-plugin-lxd/builder/lxd/builder.go:65 +0x5df
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: github.com/hashicorp/packer-plugin-sdk/rpc.(*BuilderServer).Run(0xc00028df80, 0x1, 0xc00012286c, 0x0, 0x0)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	github.com/hashicorp/packer-plugin-sdk@v0.2.3/rpc/builder.go:117 +0x1c4
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: reflect.Value.call(0xc0004ac1e0, 0xc00000ecc8, 0x13, 0xf14eb3, 0x4, 0xc000602f08, 0x3, 0x3, 0xc00004c000, 0xc0006136f8, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	reflect/value.go:476 +0x8e7
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: reflect.Value.Call(0xc0004ac1e0, 0xc00000ecc8, 0x13, 0xc000613708, 0x3, 0x3, 0xc0004aea38, 0xc0004acbf0, 0x462020)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	reflect/value.go:337 +0xb9
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: net/rpc.(*service).call(0xc00028dfc0, 0xc000099590, 0xc000694000, 0xc000694010, 0xc000188f00, 0xc000696000, 0xdac880, 0xc000122868, 0x18a, 0xd938c0, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	net/rpc/server.go:377 +0x189
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: created by net/rpc.(*Server).ServeCodec
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	net/rpc/server.go:474 +0x44d
+2022/03/27 11:44:32 [INFO] (telemetry) ending lxd.kubedee-worker
+2022/03/27 11:44:32 /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64: plugin process exited
+2022/03/27 11:44:32 ui error: [1;31mBuild 'lxd.kubedee-worker' errored after 11 seconds 981 milliseconds: unexpected EOF[0m
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:32 stdout:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:32 stderr:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: panic: interface conversion: interface {} is nil, not string
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: goroutine 89 [running]:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: github.com/hashicorp/packer-plugin-lxd/builder/lxd.(*Builder).Run(0xc000534000, 0x10e1588, 0xc00056e080, 0x10e5950, 0xc0000a2480, 0x10cf420, 0xc000580000, 0xc000585080, 0xe04080, 0xc00032a9a0, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	github.com/hashicorp/packer-plugin-lxd/builder/lxd/builder.go:65 +0x5df
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: github.com/hashicorp/packer-plugin-sdk/rpc.(*BuilderServer).Run(0xc00020ff40, 0x1, 0xc00032d06c, 0x0, 0x0)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	github.com/hashicorp/packer-plugin-sdk@v0.2.3/rpc/builder.go:117 +0x1c4
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: reflect.Value.call(0xc0004ac1e0, 0xc00000ecc8, 0x13, 0xf14eb3, 0x4, 0xc00009ef08, 0x3, 0x3, 0x2, 0x0, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	reflect/value.go:476 +0x8e7
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: reflect.Value.Call(0xc0004ac1e0, 0xc00000ecc8, 0x13, 0xc0002e7708, 0x3, 0x3, 0x1, 0xc0002e7650, 0x0)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	reflect/value.go:337 +0xb9
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: net/rpc.(*service).call(0xc00020ff80, 0xc000099590, 0xc00042a080, 0xc00042a090, 0xc000108e80, 0xc00040a080, 0xdac880, 0xc00032d068, 0x18a, 0xd938c0, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	net/rpc/server.go:377 +0x189
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: created by net/rpc.(*Server).ServeCodec
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	net/rpc/server.go:474 +0x44d
+2022/03/27 11:44:32 /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64: plugin process exited
+2022/03/27 11:44:32 [INFO] (telemetry) ending lxd.kubedee-etcd
+2022/03/27 11:44:32 ui error: [1;31mBuild 'lxd.kubedee-etcd' errored after 12 seconds 10 milliseconds: unexpected EOF[0m
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:32 stdout:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 2022/03/27 11:44:32 stderr:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: panic: interface conversion: interface {} is nil, not string
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: goroutine 38 [running]:
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: github.com/hashicorp/packer-plugin-lxd/builder/lxd.(*Builder).Run(0xc00009a600, 0x10e1588, 0xc00027dec0, 0x10e5950, 0xc000483b00, 0x10cf420, 0xc00039a980, 0xc00090e030, 0xe04080, 0xc000480020, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	github.com/hashicorp/packer-plugin-lxd/builder/lxd/builder.go:65 +0x5df
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: github.com/hashicorp/packer-plugin-sdk/rpc.(*BuilderServer).Run(0xc00027df40, 0x1, 0xc000490120, 0x0, 0x0)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	github.com/hashicorp/packer-plugin-sdk@v0.2.3/rpc/builder.go:117 +0x1c4
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: reflect.Value.call(0xc000528240, 0xc00000ecc0, 0x13, 0xf14eb3, 0x4, 0xc00058df08, 0x3, 0x3, 0xc000053800, 0xc00006cef8, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	reflect/value.go:476 +0x8e7
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: reflect.Value.Call(0xc000528240, 0xc00000ecc0, 0x13, 0xc00006cf08, 0x3, 0x3, 0xc000602bb8, 0xc0006147d0, 0x462020)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	reflect/value.go:337 +0xb9
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: net/rpc.(*service).call(0xc00027df80, 0xc00007f590, 0xc0000b4160, 0xc0000b4170, 0xc000178e80, 0xc0000ae1a0, 0xdac880, 0xc00049011c, 0x18a, 0xd938c0, ...)
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	net/rpc/server.go:377 +0x189
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: created by net/rpc.(*Server).ServeCodec
+2022/03/27 11:44:32 packer-plugin-lxd_v1.0.0_x5.0_linux_amd64 plugin: 	net/rpc/server.go:474 +0x44d
+2022/03/27 11:44:32 /home/critterjohnson/.config/packer/plugins/github.com/hashicorp/lxd/packer-plugin-lxd_v1.0.0_x5.0_linux_amd64: plugin process exited
+2022/03/27 11:44:32 [INFO] (telemetry) ending lxd.kubedee-controller
+2022/03/27 11:44:32 ui error: [1;31mBuild 'lxd.kubedee-controller' errored after 12 seconds 28 milliseconds: unexpected EOF[0m
+2022/03/27 11:44:32 ui: 
+==> Wait completed after 12 seconds 28 milliseconds
+2022/03/27 11:44:32 ui: Cleanly cancelled builds after being interrupted.
+2022/03/27 11:44:32 [INFO] (telemetry) Finalizing.
+2022/03/27 11:44:33 waiting for all plugin processes to complete...
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited
+2022/03/27 11:44:33 /usr/local/bin/packer: plugin process exited

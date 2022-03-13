@@ -25,6 +25,7 @@ func testFast(t *testing.T) {
 	}
 }
 
+// TODO: env test_fast=true to skip slow tests
 func startCluster(t *testing.T) (func(), string) {
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {
@@ -71,7 +72,7 @@ func TestClusterStarted(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	is, err := lxd.InstanceServerConnect()
+	is, _, err := lxd.InstanceServerConnect()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +106,7 @@ func TestCertificatesCreated(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	is, err := lxd.InstanceServerConnect()
+	is, _, err := lxd.InstanceServerConnect()
 	if err != nil {
 		t.Fatal(err)
 	}

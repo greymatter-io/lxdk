@@ -7,6 +7,7 @@ import (
 	"github.com/greymatter-io/lxdk/config"
 	"github.com/greymatter-io/lxdk/containers"
 	"github.com/greymatter-io/lxdk/lxd"
+	lxdclient "github.com/lxc/lxd/client"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -43,20 +44,25 @@ func doDelete(ctx *cli.Context) error {
 		return err
 	}
 
-	err = deleteContainers(state)
+	is, _, err := lxd.InstanceServerConnect()
+	if err != nil {
+		return err
+	}
+
+	err = deleteContainers(state, is)
 	if err != nil {
 		return err
 	}
 
 	if ctx.Bool("delete-storage") {
-		err = deleteStoragePool(state)
+		err = deleteStoragePool(state, is)
 		if err != nil {
 			return err
 		}
 	}
 
 	if ctx.Bool("delete-network") {
-		err = deleteNetwork(state)
+		err = deleteNetwork(state, is)
 		if err != nil {
 			return err
 		}
@@ -70,12 +76,8 @@ func doDelete(ctx *cli.Context) error {
 	return nil
 }
 
-func deleteNetwork(state config.ClusterState) error {
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return err
-	}
-	err = is.DeleteNetwork(state.NetworkID)
+func deleteNetwork(state config.ClusterState, is lxdclient.InstanceServer) error {
+	err := is.DeleteNetwork(state.NetworkID)
 	if err != nil {
 		return err
 	}
@@ -83,12 +85,8 @@ func deleteNetwork(state config.ClusterState) error {
 	return nil
 }
 
-func deleteStoragePool(state config.ClusterState) error {
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return err
-	}
-	err = is.DeleteStoragePool(state.StoragePool)
+func deleteStoragePool(state config.ClusterState, is lxdclient.InstanceServer) error {
+	err := is.DeleteStoragePool(state.StoragePool)
 	if err != nil {
 		return err
 	}
@@ -96,17 +94,21 @@ func deleteStoragePool(state config.ClusterState) error {
 	return nil
 }
 
-func deleteContainers(state config.ClusterState) error {
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return err
-	}
-
+func deleteContainers(state config.ClusterState, is lxdclient.InstanceServer) error {
 	for _, name := range state.Containers {
-		err = containers.DeleteContainer(name, is)
+		err := containers.DeleteContainer(name, is)
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func deleteProfile(state config.ClusterState, is lxdclient.InstanceServer) error {
+	err := is.DeleteProfile("lxdk")
+	if err != nil {
+		return err
 	}
 
 	return nil
