@@ -29,6 +29,11 @@ func CreateContainer(config ContainerConfig, is lxdclient.InstanceServer) (strin
 		},
 		Type: "container",
 	}
+
+	if config.ImageName == "registry" {
+		conf.Source.Alias = "kubedee-worker"
+	}
+
 	conf.Devices = map[string]map[string]string{
 		"root": {
 			"type": "disk",

@@ -248,9 +248,8 @@ func createContainers(state config.ClusterState) ([]string, error) {
 		return nil, err
 	}
 
-	// TODO: modify this later so all workers have unique IDs
-	created := make([]string, 3)
-	for i, image := range []string{"etcd", "controller", "worker"} {
+	created := make([]string, 4)
+	for i, image := range []string{"etcd", "controller", "worker", "registry"} {
 		conf := containers.ContainerConfig{
 			ImageName:   image,
 			ClusterName: state.Name,
