@@ -18,8 +18,10 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// TODO: rather than starting a cluster for every test, maybe a TestMain? need
-// to ask Coleman his thoughts on TestMain
+func testFast() bool {
+	return strings.ToLower(os.Getenv("TEST_FAST")) == "true"
+}
+
 func startCluster(t *testing.T) (func(), string) {
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {
@@ -50,6 +52,10 @@ func startCluster(t *testing.T) (func(), string) {
 }
 
 func TestClusterStarted(t *testing.T) {
+	if testFast() {
+		t.Skip("TEST_FAST is true, skipping...")
+	}
+
 	cleanup, tmpDir := startCluster(t)
 	defer cleanup()
 
@@ -82,6 +88,14 @@ func TestClusterStarted(t *testing.T) {
 }
 
 func TestCertificatesCreated(t *testing.T) {
+	if testFast() {
+		t.Skip("TEST_FAST is true, skipping...")
+	}
+
+	if strings.ToLower(os.Getenv("TEST_FAST")) == "true" {
+		t.Skip("TEST_FAST is true, skipping...")
+	}
+
 	cleanup, tmpDir := startCluster(t)
 	defer cleanup()
 
@@ -136,6 +150,10 @@ func TestCertificatesCreated(t *testing.T) {
 }
 
 func TestStartedCertChains(t *testing.T) {
+	if testFast() {
+		t.Skip("TEST_FAST is true, skipping...")
+	}
+
 	cleanup, tmpDir := startCluster(t)
 	defer cleanup()
 
