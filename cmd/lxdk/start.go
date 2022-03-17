@@ -57,6 +57,7 @@ func doStart(ctx *cli.Context) error {
 	var etcdContainerName string
 	var controllerContainerName string
 	var registryContainerName string
+	var workerContainerNames []string
 	for _, container := range state.Containers {
 		ip, err := containers.GetContainerIP(container, is)
 		if err != nil {
@@ -119,6 +120,7 @@ func doStart(ctx *cli.Context) error {
 		// TODO: probably going to have to move this out
 		// worker cert
 		if strings.Contains(container, "worker") || strings.Contains(container, "controller") {
+			workerContainerNames = append(workerContainerNames, container)
 			workerCertConfig := certs.CertConfig{
 				Name:     "node:" + container,
 				FileName: container,
@@ -224,17 +226,25 @@ func doStart(ctx *cli.Context) error {
 	}
 
 	// configure controller as worker
+	// configure worker(s)
 	controllerIP, err := containers.GetContainerIP(controllerContainerName, is)
 	if err != nil {
 		return err
 	}
 
-	err = configureWorker(controllerContainerName, controllerIP, path.Join(cacheDir, state.Name), is)
+	registryIP, err := containers.GetContainerIP(registryContainerName, is)
 	if err != nil {
 		return err
 	}
 
-	// configure worker(s)
+	for _, worker := range workerContainerNames {
+		// TODO: make the args a struct
+		err = configureWorker(worker, controllerIP, registryContainerName, registryIP, path.Join(cacheDir, state.Name), is)
+		if err != nil {
+			return err
+		}
+	}
+
 	// create admin kubeconfig
 	// configure rbac
 
@@ -242,26 +252,34 @@ func doStart(ctx *cli.Context) error {
 }
 
 // from is a file, to is a dir
-func uploadFile(from, to, container string, is lxdclient.InstanceServer) error {
-	stat, err := os.Stat(from)
-	if err != nil {
-		return fmt.Errorf("cannot stat %s: %w", from, err)
-	}
-
+func uploadFile(data []byte, from, to, container string, is lxdclient.InstanceServer) error {
 	var UID int64
 	var GID int64
-	if linuxstat, ok := stat.Sys().(*syscall.Stat_t); ok {
-		UID = int64(linuxstat.Uid)
-		GID = int64(linuxstat.Gid)
+	var mode os.FileMode
+	if data == nil || len(data) == 0 {
+		stat, err := os.Stat(from)
+		if err != nil {
+			return fmt.Errorf("cannot stat %s: %w", from, err)
+		}
+
+		if linuxstat, ok := stat.Sys().(*syscall.Stat_t); ok {
+			UID = int64(linuxstat.Uid)
+			GID = int64(linuxstat.Gid)
+		} else {
+			UID = int64(os.Getuid())
+			GID = int64(os.Getgid())
+		}
+		mode = os.FileMode(0755)
+
+		data, err = ioutil.ReadFile(from)
+		if err != nil {
+			return fmt.Errorf("cannot read %s: %w", from, err)
+		}
+
 	} else {
 		UID = int64(os.Getuid())
 		GID = int64(os.Getgid())
-	}
-	mode := os.FileMode(0755)
-
-	data, err := ioutil.ReadFile(from)
-	if err != nil {
-		return fmt.Errorf("cannot read %s: %w", from, err)
+		mode = os.FileMode(0755)
 	}
 
 	reader := bytes.NewReader(data)
@@ -276,7 +294,7 @@ func uploadFile(from, to, container string, is lxdclient.InstanceServer) error {
 	_, filename := path.Split(from)
 	toPath := path.Join(to, filename)
 
-	err = recursiveMkDir(container, to, mode, UID, GID, is)
+	err := recursiveMkDir(container, to, mode, UID, GID, is)
 	if err != nil {
 		return err
 	}
@@ -291,7 +309,7 @@ func uploadFile(from, to, container string, is lxdclient.InstanceServer) error {
 
 func uploadFiles(froms []string, to, container string, is lxdclient.InstanceServer) error {
 	for _, from := range froms {
-		err := uploadFile(from, to, container, is)
+		err := uploadFile(nil, from, to, container, is)
 		if err != nil {
 			return err
 		}
@@ -457,7 +475,7 @@ func createControllerKubeconfig(container, clusterDir string, is lxdclient.Insta
 	return nil
 }
 
-func configureWorker(container, controllerIP, clusterDir string, is lxdclient.InstanceServer) error {
+func configureWorker(container, controllerIP, registryName, registryIP, clusterDir string, is lxdclient.InstanceServer) error {
 	err := createWorkerKubeconfig(container, controllerIP, clusterDir)
 	if err != nil {
 		return err
@@ -484,7 +502,92 @@ func configureWorker(container, controllerIP, clusterDir string, is lxdclient.In
 		return err
 	}
 
-	//newDevices := lxdapi.In
+	in, _, err := is.GetInstance(container)
+	if err != nil {
+		return err
+	}
+
+	var newDevices api.InstancePut
+	newDevices.Devices = in.Devices
+
+	entries, err := os.ReadDir("/dev/")
+	if err != nil {
+		return fmt.Errorf("could read dir /dev: %w", err)
+	}
+	for _, entry := range entries {
+		if strings.Contains(entry.Name(), "loop") && len(entry.Name()) == 5 {
+			newDevices.Devices[entry.Name()] = map[string]string{
+				"type":   "unix-block",
+				"source": path.Join("/dev", entry.Name()),
+				"path":   path.Join("/dev", entry.Name()),
+			}
+		}
+	}
+
+	for _, dev := range []string{"kmsg", "kvm", "net/tun", "vhost-net", "vhost-vsock", "vsock"} {
+		newDevices.Devices[dev] = map[string]string{
+			"type":   "unix-char",
+			"source": path.Join("/dev", dev),
+			"path":   path.Join("/dev", dev),
+		}
+	}
+	//newDevices.Devices["vhost-scsi"] = map[string]string{
+	//"type":   "unix-char",
+	//"source": path.Join("/dev", "vhost-scsi"),
+	//"path":   path.Join("/dev", "vhost-sci"),
+	//}
+
+	op, err := is.UpdateInstance(container, newDevices, "")
+	if err != nil {
+		return err
+	}
+
+	err = op.Wait()
+	if err != nil {
+		return err
+	}
+
+	err = runCommands(container, []string{
+		"mkdir -p /etc/containers",
+		"mkdir -p /usr/share/containers/oci/hooks.d",
+		"ln -s /etc/crio/policy.json /etc/containers/policy.json",
+		"mkdir -p /etc/cni/net.d",
+		"mkdir -p /etc/kubernetes/config",
+	}, is)
+	if err != nil {
+		return err
+	}
+
+	registryConf := workerRegistriesConfig(registryName, registryIP)
+	err = uploadFile(registryConf, "", "/etc/containers/registries.conf", container, is)
+	if err != nil {
+		return nil
+	}
+
+	kubeletConf := kubeletConfig(container)
+	err = uploadFile(kubeletConf, "", "/etc/kubernetes/config/kubelet.yaml", container, is)
+	if err != nil {
+		return nil
+	}
+
+	kubeletUnit := kubeletUnitConfig(container)
+	err = uploadFile(kubeletUnit, "", "/etc/systemd/system/kubelet.service", container, is)
+	if err != nil {
+		return nil
+	}
+
+	err = runCommands(container, []string{
+		"systemctl daemon-reload",
+		"systemctl -q enable crio",
+		"systemctl start crio",
+		"systemctl -q enable kubelet",
+		"systemctl start kubelet",
+		"systemctl -q enable kube-proxy",
+		"systemctl start kube-proxy",
+	}, is)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -590,4 +693,71 @@ func createWorkerKubeconfig(container, controllerIP, clusterDir string) error {
 	}
 
 	return nil
+}
+
+func workerRegistriesConfig(registryName, registryIP string) []byte {
+	return []byte(fmt.Sprintf(`unqualified-search-registries = ['docker.io']
+[[registry]]
+prefix = "registry.local:5000"
+insecure = true
+location = "%s:5000"
+[[registry]]
+prefix = "%s:5000"
+insecure = true
+location = "%s:5000"
+[[registry]]
+prefix = "%s:-127.0.0.1}:5000"
+insecure = true
+location = "%s:-127.0.0.1}:5000"`, registryName, registryName, registryName, registryIP, registryIP))
+}
+
+func kubeletConfig(containerName string) []byte {
+	return []byte(fmt.Sprintf(`kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+  x509:
+    clientCAFile: "/etc/kubernetes/ca.pem"
+authorization:
+  mode: Webhook
+cgroupDriver: systemd
+clusterDomain: "cluster.local"
+clusterDNS:
+  - "10.32.0.10"
+podCIDR: "10.20.0.0/16"
+runtimeRequestTimeout: "10m"
+tlsCertFile: "/etc/kubernetes/%s.pem"
+tlsPrivateKeyFile: "/etc/kubernetes/%s-key.pem"
+failSwapOn: false
+evictionHard: {}
+enforceNodeAllocatable: []
+maxPods: 1000
+# TODO(schu): check if issues were updated
+# https://github.com/kubernetes/kubernetes/issues/66067
+# https://github.com/kubernetes-sigs/cri-o/issues/1769
+#resolverConfig: /run/systemd/resolve/resolv.conf
+#resolverConfig: /var/run/netconfig/resolv.conf`, containerName, containerName))
+}
+
+func kubeletUnitConfig(containerName string) []byte {
+	return []byte(fmt.Sprintf(`[Unit]
+Description=Kubernetes Kubelet
+After=crio.service
+Requires=crio.service
+[Service]
+ExecStart=/usr/local/bin/kubelet \\
+  --config=/etc/kubernetes/config/kubelet.yaml \\
+  --container-runtime=remote \\
+  --container-runtime-endpoint=unix:///var/run/crio/crio.sock \\
+  --image-service-endpoint=unix:///var/run/crio/crio.sock \\
+  --kubeconfig=/etc/kubernetes/%s-kubelet.kubeconfig \\
+  --register-node=true \\
+  --v=2
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target`, containerName))
 }

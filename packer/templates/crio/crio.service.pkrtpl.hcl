@@ -2,7 +2,9 @@
 Description=CRI-O daemon
 
 [Service]
-ExecStart=/usr/local/bin/crio --registry docker.io
+ExecStartPre=/usr/bin/mkdir -p /run/kata-containers/shared/sandboxes
+ExecStartPre=/usr/bin/mount --bind --make-rshared /run/kata-containers/shared/sandboxes /run/kata-containers/shared/sandboxes
+ExecStart=/usr/local/bin/crio
 Restart=always
 RestartSec=10s
 
