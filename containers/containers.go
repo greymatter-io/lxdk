@@ -128,6 +128,7 @@ func DeleteContainer(name string, is lxd.InstanceServer) error {
 }
 
 func GetContainerIP(name string, is lxd.InstanceServer) (string, error) {
+	// TODO: loop with timeout
 	in, _, err := is.GetInstanceFull(name)
 	if err != nil {
 		return "", fmt.Errorf("error getting instance: %w", err)

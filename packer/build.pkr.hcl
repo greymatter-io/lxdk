@@ -135,5 +135,12 @@ build {
     destination = "/etc/systemd/system/kube-controller-manager.service"
   }
 
+  # oci-registry.service
+  provisioner "file" {
+    only        = ["lxd.kubedee-worker"]
+    source      = "./templates/oci-registry.service.pkrtpl.hcl"
+    destination = "/etc/systemd/system/oci-registry.service"
+  }
+
 }
 

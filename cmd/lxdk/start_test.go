@@ -22,6 +22,7 @@ func testFast() bool {
 	return strings.ToLower(os.Getenv("TEST_FAST")) == "true"
 }
 
+// TODO: env test_fast=true to skip slow tests
 func startCluster(t *testing.T) (func(), string) {
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {

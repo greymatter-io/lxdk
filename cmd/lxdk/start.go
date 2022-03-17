@@ -209,6 +209,9 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
+	// TODO: apiserver flags should be configurable, use a .env file for
+	// the apiserver systemd service
+
 	// configure controller as worker
 	// configure worker(s)
 	// create admin kubeconfig
@@ -430,5 +433,9 @@ func createControllerKubeconfig(container, clusterDir string, is lxdclient.Insta
 		return fmt.Errorf("error on 'kubectl set-context': %s", out)
 	}
 
+	return nil
+}
+
+func configureWorker(container, clusterDir string, is lxdclient.InstanceServer) error {
 	return nil
 }
