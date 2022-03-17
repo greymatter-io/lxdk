@@ -2,6 +2,17 @@
 
 set -e -o pipefail
 
+usage() {
+  cmd_help
+  exit 1
+}
+
+cmd_help () {
+  echo 'valid args: build, debug, help'
+  echo ""
+}
+
+
 BASE_PACKAGE="github.com/greymatter-io/lxdk"
 VERSIONS_PACKAGE="${BASE_PACKAGE}/version"
 MAIN_PACKAGE="${BASE_PACKAGE}/cmd/lxdk"
@@ -16,15 +27,22 @@ cmd_build() {
          --mod=vendor $MAIN_PACKAGE
 }
 
+cmd_debug () {
+  go build -o ./bin/lxdk \
+      -ldflags "$VERSION_FLAG $COMMIT_FLAG" \
+      --mod=vendor \
+      -gcflags 'all=-N -l' "$MAIN_PACKAGE"
+}
+
 if [ $# -eq "0" ]; then
     cmd_build
     exit 0
 fi
-
-case $1 in
-build)
-  ./scripts/bootstrap
-  cmd_build
+CMD=$1
+case $CMD in
+build|debug|help)
+  shift
+  cmd_$CMD
   ;;
 *)
   echo "invalid argument: $1"

@@ -40,7 +40,7 @@ var (
 func doCreate(ctx *cli.Context) error {
 	var state config.ClusterState
 	state.StorageDriver = ctx.String("storage-driver")
-	state.StoragePool = ctx.String("storage_pool")
+	state.StoragePool = ctx.String("storage-pool")
 	state.NetworkID = ctx.String("network")
 
 	cacheDir := ctx.String("cache")
