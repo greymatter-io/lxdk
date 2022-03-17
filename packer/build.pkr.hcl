@@ -109,7 +109,7 @@ build {
   # crio.service
   provisioner "file" {
     only        = ["lxd.kubedee-controller", "lxd.kubedee-worker"]
-    source      = "./templates/crio.service.pkrtpl.hcl"
+    source      = "./templates/crio/crio.service.pkrtpl.hcl"
     destination = "/etc/systemd/system/crio.service"
   }
 
@@ -137,10 +137,35 @@ build {
 
   # oci-registry.service
   provisioner "file" {
-    only        = ["lxd.kubedee-worker"]
+    only        = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
     source      = "./templates/oci-registry.service.pkrtpl.hcl"
     destination = "/etc/systemd/system/oci-registry.service"
   }
 
-}
+  provisioner "shell" {
+    only        = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    inline      = [
+        "mkdir -p /etc/docker/registry",
+        "mkdir -p /etc/crio",
+    ]
+  }
 
+  # registry config.yml
+  provisioner "file" {
+    only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    source      = "./templates/registry_config.yml.pkrtpl.hcl"
+    destination = "/etc/docker/registry/config.yml"
+  }
+
+  provisioner "file" {
+    only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    sources     = [
+        "./templates/crio/crictl.yaml.pkrtpl.hcl",
+        "./templates/crio/crio-umount.conf.pkrtpl.hcl",
+        "./templates/crio/crio.conf.pkrtpl.hcl",
+        "./templates/crio/crio.service.pkrtpl.hcl",
+        "./templates/crio/policy.json.pkrtpl.hcl",
+    ]
+    destination = "/etc/crio/"
+  }
+}

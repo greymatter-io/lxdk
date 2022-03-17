@@ -26,6 +26,8 @@ var startCmd = &cli.Command{
 	Action: doStart,
 }
 
+// TODO: apiserver flags should be configurable, use a .env file for
+// the apiserver systemd service
 func doStart(ctx *cli.Context) error {
 	cacheDir := ctx.String("cache")
 	if ctx.Args().Len() == 0 {
@@ -54,10 +56,16 @@ func doStart(ctx *cli.Context) error {
 
 	var etcdContainerName string
 	var controllerContainerName string
+	var registryContainerName string
 	for _, container := range state.Containers {
 		ip, err := containers.GetContainerIP(container, is)
 		if err != nil {
 			return err
+		}
+
+		// registry
+		if strings.Contains(container, "registry") {
+			registryContainerName = container
 		}
 
 		// etcd cert
@@ -108,9 +116,9 @@ func doStart(ctx *cli.Context) error {
 			}
 		}
 
-		// TDOO: probably going to have to move this out
+		// TODO: probably going to have to move this out
 		// worker cert
-		if strings.Contains(container, "worker") {
+		if strings.Contains(container, "worker") || strings.Contains(container, "controller") {
 			workerCertConfig := certs.CertConfig{
 				Name:     "node:" + container,
 				FileName: container,
@@ -154,9 +162,15 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	// configure registry - would it be easier to clone the worker image and
-	// copy in the docker registry and service config in the packer build?
-	// https://github.com/zer0def/kubedee/blob/master/lib.bash#L795
+	// configure registry
+	err = runCommands(registryContainerName, []string{
+		"systemctl daemon-reload",
+		"systemctl -q enable oci-registry",
+		"systemctl start oci-registry",
+	}, is)
+	if err != nil {
+		return err
+	}
 
 	// configure controller
 	kfgPath := path.Join(cacheDir, state.Name, "kubeconfigs")
@@ -209,10 +223,17 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	// TODO: apiserver flags should be configurable, use a .env file for
-	// the apiserver systemd service
-
 	// configure controller as worker
+	controllerIP, err := containers.GetContainerIP(controllerContainerName, is)
+	if err != nil {
+		return err
+	}
+
+	err = configureWorker(controllerContainerName, controllerIP, path.Join(cacheDir, state.Name), is)
+	if err != nil {
+		return err
+	}
+
 	// configure worker(s)
 	// create admin kubeconfig
 	// configure rbac
@@ -436,6 +457,137 @@ func createControllerKubeconfig(container, clusterDir string, is lxdclient.Insta
 	return nil
 }
 
-func configureWorker(container, clusterDir string, is lxdclient.InstanceServer) error {
+func configureWorker(container, controllerIP, clusterDir string, is lxdclient.InstanceServer) error {
+	err := createWorkerKubeconfig(container, controllerIP, clusterDir)
+	if err != nil {
+		return err
+	}
+
+	certDir := path.Join(clusterDir, "certificates")
+	kcfgDir := path.Join(clusterDir, "kubeconfigs")
+
+	workerCertPaths := []string{
+		path.Join(certDir, container+".pem"),
+		path.Join(certDir, container+"-key.pem"),
+	}
+	err = uploadFiles(workerCertPaths, "/etc/kubernetes/", container, is)
+	if err != nil {
+		return err
+	}
+
+	workerKcfgPaths := []string{
+		path.Join(kcfgDir, "kube-proxy.kubeconfig"),
+		path.Join(kcfgDir, container+"-kubelet.kubeconfig"),
+	}
+	err = uploadFiles(workerKcfgPaths, "/etc/kubernetes/", container, is)
+	if err != nil {
+		return err
+	}
+
+	//newDevices := lxdapi.In
+
+	return nil
+}
+
+func createWorkerKubeconfig(container, controllerIP, clusterDir string) error {
+	certDir := path.Join(clusterDir, "certificates")
+	kfgDir := path.Join(clusterDir, "kubeconfigs")
+
+	out, err := exec.Command("kubectl",
+		"config",
+		"set-cluster",
+		"kubedee",
+		"--certificate-authority="+path.Join(certDir, "ca.pem"),
+		"--embed-certs=true",
+		"--server=https://"+controllerIP+":6443",
+		"--kubeconfig="+path.Join(kfgDir, "kube-proxy.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl set-cluster': %s", out)
+	}
+
+	out, err = exec.Command("kubectl",
+		"config",
+		"set-credentials",
+		"kube-proxy",
+		"--client-certificate="+path.Join(certDir, "kube-proxy.pem"),
+		"--client-key="+path.Join(certDir, "kube-proxy-key.pem"),
+		"--embed-certs=true",
+		"--kubeconfig="+path.Join(kfgDir, "kube-proxy.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl set-credentials': %s", out)
+	}
+
+	out, err = exec.Command("kubectl",
+		"config",
+		"set-context",
+		"default",
+		"--cluster=kubedee",
+		"--user=kube-proxy",
+		"--kubeconfig="+path.Join(kfgDir, "kube-proxy.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl set-context': %s", out)
+	}
+
+	out, err = exec.Command("kubectl",
+		"config",
+		"use-context",
+		"default",
+		"--kubeconfig="+path.Join(kfgDir, "kube-proxy.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl use-context': %s", out)
+	}
+
+	out, err = exec.Command("kubectl",
+		"config",
+		"set-cluster",
+		"kubedee",
+		"--certificate-authority="+path.Join(certDir, "ca.pem"),
+		"--embed-certs=true",
+		"--server=https://"+controllerIP+":6443",
+		"--kubeconfig="+path.Join(kfgDir, container+"-kubelet.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl set-cluster': %s", out)
+	}
+
+	out, err = exec.Command("kubectl",
+		"config",
+		"set-credentials",
+		"system:node:"+container,
+		"--client-certificate="+path.Join(certDir, container+".pem"),
+		"--client-key="+path.Join(certDir, container+"-key.pem"),
+		"--embed-certs=true",
+		"--kubeconfig="+path.Join(kfgDir, container+"-kubelet.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl set-credentials': %s", out)
+	}
+
+	out, err = exec.Command("kubectl",
+		"config",
+		"set-context",
+		"default",
+		"--cluster=kubedee",
+		"--user=system:node:"+container,
+		"--kubeconfig="+path.Join(kfgDir, container+"-kubelet.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl set-context': %s", out)
+	}
+
+	out, err = exec.Command("kubectl",
+		"config",
+		"use-context",
+		"default",
+		"--kubeconfig="+path.Join(kfgDir, container+"-kubelet.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl use-context': %s", out)
+	}
+
 	return nil
 }
