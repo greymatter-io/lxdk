@@ -48,6 +48,11 @@ func doDelete(ctx *cli.Context) error {
 		return err
 	}
 
+	err = deleteProfile(state)
+	if err != nil {
+		return err
+	}
+
 	if ctx.Bool("delete-storage") {
 		err = deleteStoragePool(state)
 		if err != nil {
@@ -107,6 +112,20 @@ func deleteContainers(state config.ClusterState) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func deleteProfile(state config.ClusterState) error {
+	is, err := lxd.InstanceServerConnect()
+	if err != nil {
+		return err
+	}
+
+	err = is.DeleteProfile("lxdk")
+	if err != nil {
+		return err
 	}
 
 	return nil

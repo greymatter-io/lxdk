@@ -9,4 +9,7 @@ require (
 	github.com/lxc/lxd v0.0.0-20220211231312-81512e0826f1
 	github.com/pkg/errors v0.9.1
 	github.com/urfave/cli/v2 v2.3.0
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
+	k8s.io/apimachinery v0.23.5
+	k8s.io/client-go v0.23.5
 )

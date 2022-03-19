@@ -9,6 +9,7 @@ import (
 	"github.com/greymatter-io/lxdk/config"
 	"github.com/greymatter-io/lxdk/containers"
 	"github.com/greymatter-io/lxdk/lxd"
+	lxdclient "github.com/lxc/lxd/client"
 	"github.com/lxc/lxd/shared/api"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -73,7 +74,17 @@ func doCreate(ctx *cli.Context) error {
 		}
 	}
 
-	containers, err := createContainers(state)
+	is, err := lxd.InstanceServerConnect()
+	if err != nil {
+		return err
+	}
+
+	err = containers.CreateContainerProfile(is)
+	if err != nil {
+		return err
+	}
+
+	containers, err := createContainers(state, is)
 	if err != nil {
 		return err
 	}
@@ -157,7 +168,8 @@ func createCerts(cacheDir string) error {
 	// admin cert
 	adminCertConfig := certs.CertConfig{
 		Name:         "admin",
-		CN:           "system:masters",
+		CN:           "admin",
+		JSONOverride: certs.CertJSON("admin", "system:masters"),
 		CA:           kubeCAConf,
 		Dir:          path,
 		CAConfigPath: caConfigPath,
@@ -242,12 +254,7 @@ func createStoragePool(state config.ClusterState) (string, error) {
 	return stPoolPost.Name, nil
 }
 
-func createContainers(state config.ClusterState) ([]string, error) {
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return nil, err
-	}
-
+func createContainers(state config.ClusterState, is lxdclient.InstanceServer) ([]string, error) {
 	created := make([]string, 4)
 	for i, image := range []string{"etcd", "controller", "worker", "registry"} {
 		conf := containers.ContainerConfig{
@@ -265,5 +272,5 @@ func createContainers(state config.ClusterState) ([]string, error) {
 		created[i] = containerName
 	}
 
-	return created, err
+	return created, nil
 }

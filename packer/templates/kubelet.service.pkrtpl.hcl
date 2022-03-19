@@ -4,7 +4,7 @@ After=crio.service
 Requires=crio.service
 
 [Service]
-EnvironmentFile=
+EnvironmentFile=/etc/lxdk/env
 ExecStart=/usr/local/bin/kubelet \
   --cgroup-driver=systemd \
   --config=/etc/kubernetes/config/kubelet.yaml \
@@ -20,4 +20,3 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-

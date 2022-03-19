@@ -18,8 +18,40 @@ type ContainerConfig struct {
 	NetworkID   string
 }
 
+func CreateContainerProfile(is lxdclient.InstanceServer) error {
+	prof, _, err := is.GetProfile("default")
+	if err != nil {
+		return fmt.Errorf("could not get lxd default profile: %w", err)
+	}
+
+	newProf := api.ProfilesPost{
+		Name: "lxdk",
+	}
+	newProf.Devices = prof.Devices
+	newProf.Config = map[string]string{
+		"raw.lxc": `lxc.apparmor.profile=unconfined
+lxc.mount.auto=proc:rw sys:rw cgroup:rw
+lxc.init.cmd=/sbin/init systemd.unified_cgroup_hierarchy=0
+lxc.cgroup.devices.allow=a
+lxc.cgroup2.devices.allow=a
+lxc.cap.drop=
+lxc.apparmor.allow_incomplete=1`,
+		"security.privileged":  "true",
+		"security.nesting":     "true",
+		"linux.kernel_modules": "ip_tables,ip6_tables,netlink_diag,nf_nat,overlay,kvm,vhost-net,vhost-scsi,vhost-vsock,vsock",
+	}
+
+	err = is.CreateProfile(newProf)
+	if err != nil {
+		return fmt.Errorf("could not create profile: %w", err)
+	}
+
+	return nil
+}
+
 func CreateContainer(config ContainerConfig, is lxdclient.InstanceServer) (string, error) {
-	// TODO: kubdee applies a default profile to everything
+	// TODO: https://github.com/zer0def/kubedee/blob/master/lib.bash#L1116
+	// kubdee applies unified_profile if cgroup=2
 
 	conf := api.InstancesPost{
 		Name: fmt.Sprintf("lxdk-%s-%s-%s", config.ClusterName, config.ImageName, createID()),
@@ -28,6 +60,12 @@ func CreateContainer(config ContainerConfig, is lxdclient.InstanceServer) (strin
 			Alias: "kubedee-" + config.ImageName,
 		},
 		Type: "container",
+	}
+	conf.Config = map[string]string{
+		"raw.lxc": "lxc.apparmor.allow_incomplete=1",
+	}
+	if !strings.Contains(config.ImageName, "etcd") {
+		conf.Profiles = []string{"lxdk"}
 	}
 
 	if config.ImageName == "registry" {

@@ -74,6 +74,7 @@ build {
     scripts = [
       "./scripts/download-k8s.sh",
       "./scripts/download-crio.sh",
+      "./scripts/download-registry.sh",
     ]
   }
 
@@ -147,6 +148,7 @@ build {
     inline      = [
         "mkdir -p /etc/docker/registry",
         "mkdir -p /etc/crio",
+        "mkdir -p /etc/kubernetes/config",
     ]
   }
 
@@ -155,6 +157,13 @@ build {
     only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
     source      = "./templates/registry_config.yml.pkrtpl.hcl"
     destination = "/etc/docker/registry/config.yml"
+  }
+
+  # scheduler config
+  provisioner "file" {
+    only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
+    source      = "./templates/kube-scheduler.yaml.pkrtpl.hcl"
+    destination = "/etc/kubernetes/config/kube-scheduler.yaml"
   }
 
   provisioner "file" {
