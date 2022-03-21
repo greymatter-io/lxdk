@@ -66,7 +66,7 @@ func CreateContainer(config ContainerConfig, is lxdclient.InstanceServer) (strin
 
 	op, err := is.CreateInstance(conf)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("there was an error creating the instance: (%w), does the image '%s' exist?", err, "kuedee-"+config.ImageName)
 	}
 
 	err = op.Wait()

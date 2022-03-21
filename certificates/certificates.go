@@ -108,12 +108,19 @@ type CertConfig struct {
 
 	// FileName overrides Name for saving the file (optional, use if Name is
 	// not a valid file name)
-	FileName     string
-	CN           string
-	CA           CAConfig
-	Dir          string
+	FileName string
+
+	CN string
+	CA CAConfig
+
+	// Directory to create the certificate in
+	Dir string
+
+	// Path to ca-config.json for cfssl
 	CAConfigPath string
-	ExtraOpts    map[string]string
+
+	// ExtraOpts are extra options to pass to cfssl gencert
+	ExtraOpts map[string]string
 
 	JSONOverride []byte
 }
