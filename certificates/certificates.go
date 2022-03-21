@@ -11,9 +11,14 @@ import (
 )
 
 type CAConfig struct {
+	// Name is the base filename (no extension) of the CA to be created
 	Name string
-	CN   string
-	Dir  string
+
+	// CN of the CA
+	CN string
+
+	// Dir is the directory to create the CA in
+	Dir string
 }
 
 func CreateCA(conf CAConfig) error {
@@ -62,6 +67,8 @@ func CreateCA(conf CAConfig) error {
 	return nil
 }
 
+// CAJSON returns a cfssl JSON configuration with CN as both the CN and
+// Organization
 func CAJSON(CN string) []byte {
 	return []byte(fmt.Sprintf(`{
   "CN": "%s",
@@ -210,7 +217,8 @@ func CreateCert(conf CertConfig) error {
 	return nil
 }
 
-func CertJSON(CN, name string) []byte {
+// CertJSON returns a cfssl certificate json configuration
+func CertJSON(CN, organization string) []byte {
 	return []byte(fmt.Sprintf(`{
   "CN": "%s",
   "key": {
@@ -226,5 +234,5 @@ func CertJSON(CN, name string) []byte {
       "ST": "Berlin"
     }
   ]
-}`, CN, name))
+}`, CN, organization))
 }
