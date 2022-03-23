@@ -1,14 +1,24 @@
 package containers
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
+	"path"
 	"strings"
+	"syscall"
 
 	lxd "github.com/lxc/lxd/client"
 	lxdclient "github.com/lxc/lxd/client"
 	"github.com/lxc/lxd/shared/api"
+)
+
+var (
+	UID int64
+	GID int64
 )
 
 type ContainerConfig struct {
@@ -194,6 +204,139 @@ func GetContainerIP(name string, is lxd.InstanceServer) (string, error) {
 	}
 
 	return ips[0], nil
+}
+
+// from is a file, to is a dir
+func UploadFile(data []byte, from, to, container string, is lxdclient.InstanceServer) error {
+	var mode os.FileMode
+	var toPath string
+	// if data does not exist, read a file from disk and to should be a
+	// directory
+	if data == nil || len(data) == 0 {
+		stat, err := os.Stat(from)
+		if err != nil {
+			return fmt.Errorf("cannot stat %s: %w", from, err)
+		}
+
+		if linuxstat, ok := stat.Sys().(*syscall.Stat_t); ok {
+			UID = int64(linuxstat.Uid)
+			GID = int64(linuxstat.Gid)
+		}
+		mode = os.FileMode(0755)
+
+		data, err = ioutil.ReadFile(from)
+		if err != nil {
+			return fmt.Errorf("cannot read %s: %w", from, err)
+		}
+		_, filename := path.Split(from)
+		toPath = path.Join(to, filename)
+
+		err = RecursiveMkdir(container, to, mode, UID, GID, is)
+		if err != nil {
+			return err
+		}
+	} else {
+		// if data exists, to should be a filename and we have to
+		// let lxc infer the UID and GID
+		toPath = to
+		mode = os.FileMode(0755)
+
+		toDir, _ := path.Split(to)
+		err := RecursiveMkdir(container, toDir, mode, UID, GID, is)
+		if err != nil {
+			return err
+		}
+	}
+
+	reader := bytes.NewReader(data)
+
+	args := lxdclient.InstanceFileArgs{
+		Type:    "file",
+		UID:     UID,
+		GID:     GID,
+		Mode:    int(mode.Perm()),
+		Content: reader,
+	}
+
+	err := is.CreateInstanceFile(container, toPath, args)
+	if err != nil {
+		return fmt.Errorf("cannot push %s to %s: %w", from, toPath, err)
+	}
+
+	return nil
+}
+
+func RecursiveMkdir(container, dir string, mode os.FileMode, UID, GID int64, is lxdclient.InstanceServer) error {
+	if dir == "/" {
+		return nil
+	}
+
+	if strings.HasSuffix(dir, "/") {
+		dir = dir[:len(dir)-1]
+	}
+
+	split := strings.Split(dir[1:], "/")
+	if len(split) > 1 {
+		err := RecursiveMkdir(container, "/"+strings.Join(split[:len(split)-1], "/"), mode, UID, GID, is)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, resp, err := is.GetInstanceFile(container, dir)
+	if err == nil && resp.Type == "directory" {
+		return nil
+	}
+	if err == nil && resp.Type != "directory" {
+		return fmt.Errorf("%s is not a directory", dir)
+	}
+
+	args := lxdclient.InstanceFileArgs{
+		Type: "directory",
+		UID:  UID,
+		GID:  UID,
+		Mode: int(mode.Perm()),
+	}
+	return is.CreateInstanceFile(container, dir, args)
+}
+
+func UploadFiles(froms []string, to, container string, is lxdclient.InstanceServer) error {
+	for _, from := range froms {
+		err := UploadFile(nil, from, to, container, is)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func RunCommand(container, command string, is lxdclient.InstanceServer) error {
+	split := strings.Split(command, " ")
+
+	op, err := is.ExecInstance(container, api.InstanceExecPost{
+		Command: split,
+	}, &lxdclient.InstanceExecArgs{})
+	if err != nil {
+		return err
+	}
+
+	err = op.Wait()
+	if err != nil {
+		return fmt.Errorf("could not run command %s: %w", command, err)
+	}
+
+	return nil
+}
+
+func RunCommands(container string, commands []string, is lxdclient.InstanceServer) error {
+	for _, command := range commands {
+		err := RunCommand(container, command, is)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func createID() string {

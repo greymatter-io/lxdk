@@ -84,11 +84,18 @@ func doCreate(ctx *cli.Context) error {
 		return err
 	}
 
-	containers, err := createContainers(state, is)
+	containerNames, err := createContainers(state, is)
 	if err != nil {
 		return err
 	}
-	state.Containers = append(state.Containers, containers...)
+	state.EtcdContainerName = containerNames["etcd"]
+	state.ControllerContainerName = containerNames["controller"]
+	state.RegistryContainerName = containerNames["registry"]
+	state.WorkerContainerNames = []string{containerNames["worker"]}
+
+	for _, v := range containerNames {
+		state.Containers = append(state.Containers, v)
+	}
 
 	err = createCerts(path)
 	if err != nil {
@@ -254,9 +261,9 @@ func createStoragePool(state config.ClusterState) (string, error) {
 	return stPoolPost.Name, nil
 }
 
-func createContainers(state config.ClusterState, is lxdclient.InstanceServer) ([]string, error) {
-	created := make([]string, 4)
-	for i, image := range []string{"etcd", "controller", "worker", "registry"} {
+func createContainers(state config.ClusterState, is lxdclient.InstanceServer) (map[string]string, error) {
+	created := make(map[string]string)
+	for _, image := range []string{"etcd", "controller", "worker", "registry"} {
 		conf := containers.ContainerConfig{
 			ImageName:   image,
 			ClusterName: state.Name,
@@ -269,7 +276,7 @@ func createContainers(state config.ClusterState, is lxdclient.InstanceServer) ([
 			return nil, err
 		}
 
-		created[i] = containerName
+		created[image] = containerName
 	}
 
 	return created, nil
