@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+
+cmd_debug () {
+   dlv --listen=:2346 --headless=true --api-version=2 \
+       --accept-multiclient exec -- ./bin/lxdk "$@"
+}
+
+cmd_help () {
+    echo "valid commands: debug, help
+
+debug: 
+  Run a dlv server on port 2346, pass remaining args to dlv's exec.
+  The build sitting at bin/lxdk should be built with ./scripts/build debug
+  examples:
+    ./scripts/debug ARG1 ARG2
+
+help:
+  print this message and exit"
+}
+
+usage () {
+    cmd_help
+    exit 1
+}
+
+if [ $# -eq 0 ]; then
+    cmd_version
+else
+  MODE="${1:-}"
+  case "$MODE" in
+    debug|help)
+      shift
+      "cmd_$MODE" "$@"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+fi

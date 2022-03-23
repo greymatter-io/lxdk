@@ -33,6 +33,8 @@ func TestDebugCert(t *testing.T) {
 		"test",
 	})
 
+	app.RunContext(ctx.Context, []string{"lxdk", "delete", "test"})
+
 	if err != nil {
 		t.Fatal(err)
 	}

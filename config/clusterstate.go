@@ -26,7 +26,7 @@ func ClusterStateFromContext(ctx *cli.Context) (ClusterState, error) {
 		return state, errors.New("must supply cluster name")
 	}
 
-	clusterConfigPath := path.Join(ctx.String("cache"), clusterName, "config.toml")
+	clusterConfigPath := path.Join(ctx.String("cache"), clusterName, "state.toml")
 	_, err := toml.DecodeFile(clusterConfigPath, &state)
 	if err != nil {
 		return state, errors.Wrap(err, "error loading config file")
@@ -47,7 +47,7 @@ func WriteClusterState(ctx *cli.Context, state ClusterState) error {
 		return errors.Wrap(err, "error creating "+cacheDir)
 	}
 
-	clusterConfigPath := path.Join(cacheDir, "config.toml")
+	clusterConfigPath := path.Join(cacheDir, "state.toml")
 	w, err := os.Create(clusterConfigPath)
 	if err != nil {
 		return err

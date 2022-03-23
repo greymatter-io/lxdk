@@ -1,13 +1,12 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path"
 
 	"github.com/greymatter-io/lxdk/config"
+	"github.com/greymatter-io/lxdk/containers"
 	"github.com/greymatter-io/lxdk/lxd"
-	"github.com/lxc/lxd/shared/api"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -103,31 +102,12 @@ func deleteContainers(state config.ClusterState) error {
 		return err
 	}
 
-	reqState := api.InstanceStatePut{
-		Action:  "stop",
-		Timeout: -1,
-	}
 	for _, name := range state.Containers {
-		op, err := is.UpdateInstanceState(name, reqState, "")
+		err = containers.DeleteContainer(name, is)
 		if err != nil {
 			return err
-		}
-
-		err = op.Wait()
-		if err != nil {
-			log.Println("instance is already stopped, continuing")
-		}
-
-		op, err = is.DeleteInstance(name)
-		if err != nil {
-			return err
-		}
-
-		if err := op.Wait(); err != nil {
 		}
 	}
 
 	return nil
 }
-
-//kubedee [options] delete <cluster name>            delete a cluster

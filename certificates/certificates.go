@@ -11,9 +11,14 @@ import (
 )
 
 type CAConfig struct {
+	// Name is the base filename (no extension) of the CA to be created
 	Name string
-	CN   string
-	Dir  string
+
+	// CN of the CA
+	CN string
+
+	// Dir is the directory to create the CA in
+	Dir string
 }
 
 func CreateCA(conf CAConfig) error {
@@ -62,6 +67,8 @@ func CreateCA(conf CAConfig) error {
 	return nil
 }
 
+// CAJSON returns a cfssl JSON configuration with CN as both the CN and
+// Organization
 func CAJSON(CN string) []byte {
 	return []byte(fmt.Sprintf(`{
   "CN": "%s",
@@ -108,11 +115,19 @@ type CertConfig struct {
 
 	// FileName overrides Name for saving the file (optional, use if Name is
 	// not a valid file name)
-	FileName     string
-	CN           string
-	CA           CAConfig
-	Dir          string
+	FileName string
+
+	CN string
+	CA CAConfig
+
+	// Directory to create the certificate in
+	Dir string
+
+	// Path to ca-config.json for cfssl
 	CAConfigPath string
+
+	// ExtraOpts are extra options to pass to cfssl gencert
+	ExtraOpts map[string]string
 
 	JSONOverride []byte
 }
@@ -125,14 +140,24 @@ func CreateCert(conf CertConfig) error {
 	caKeyPath := path.Join(conf.CA.Dir, conf.CA.Name+"-key.pem")
 	profile := "kubernetes"
 
+	args := make([]string, 6+len(conf.ExtraOpts))
+	args = []string{
+		"gencert",
+		"-ca=" + caPath,
+		"-ca-key=" + caKeyPath,
+		"-config=" + conf.CAConfigPath,
+		"-profile=" + profile,
+	}
+	if len(conf.ExtraOpts) > 0 {
+		for k, v := range conf.ExtraOpts {
+			args = append(args, fmt.Sprintf("-%s=%s", k, v))
+		}
+	}
+	args = append(args, "-")
+
 	cfsslCmd := exec.Command(
 		"cfssl",
-		"gencert",
-		"-ca="+caPath,
-		"-ca-key="+caKeyPath,
-		"-config="+conf.CAConfigPath,
-		"-profile="+profile,
-		"-",
+		args...,
 	)
 	cfsslCmd.Dir = conf.Dir
 
@@ -192,7 +217,8 @@ func CreateCert(conf CertConfig) error {
 	return nil
 }
 
-func CertJSON(CN, name string) []byte {
+// CertJSON returns a cfssl certificate json configuration
+func CertJSON(CN, organization string) []byte {
 	return []byte(fmt.Sprintf(`{
   "CN": "%s",
   "key": {
@@ -208,5 +234,5 @@ func CertJSON(CN, name string) []byte {
       "ST": "Berlin"
     }
   ]
-}`, CN, name))
+}`, CN, organization))
 }

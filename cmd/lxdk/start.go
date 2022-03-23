@@ -1,9 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"path"
+	"strings"
+
+	"github.com/greymatter-io/lxdk/certificates"
+	certs "github.com/greymatter-io/lxdk/certificates"
 	"github.com/greymatter-io/lxdk/config"
+	"github.com/greymatter-io/lxdk/containers"
 	"github.com/greymatter-io/lxdk/lxd"
-	"github.com/lxc/lxd/shared/api"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,48 +19,109 @@ var startCmd = &cli.Command{
 	Action: doStart,
 }
 
-// TODO: etcd cert
-// TODO: controller cert
-// TODO: worker cert
-
 func doStart(ctx *cli.Context) error {
+	cacheDir := ctx.String("cache")
+	if ctx.Args().Len() == 0 {
+		return fmt.Errorf("must supply cluster name")
+	}
+	clusterName := ctx.Args().First()
+	certDir := path.Join(cacheDir, clusterName, "certificates")
+
 	state, err := config.ClusterStateFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, container := range state.Containers {
-		err = startContainer(container)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func startContainer(containerName string) error {
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
 	}
 
-	reqState := api.InstanceStatePut{
-		Action:  "start",
-		Timeout: -1,
+	for _, container := range state.Containers {
+		err = containers.StartContainer(container, is)
+		if err != nil {
+			return err
+		}
+
 	}
 
-	op, err := is.UpdateInstanceState(containerName, reqState, "")
-	if err != nil {
-		return err
-	}
+	for _, container := range state.Containers {
+		ip, err := containers.GetContainerIP(container, is)
+		if err != nil {
+			return err
+		}
 
-	err = op.Wait()
-	if err != nil {
-		return err
+		// etcd cert
+		if strings.Contains(container, "etcd") {
+			etcdCertConfig := certs.CertConfig{
+				Name: "etcd",
+				CN:   "etcd",
+				CA: certs.CAConfig{
+					Name: "ca-etcd",
+					Dir:  certDir,
+					CN:   "etcd",
+				},
+				Dir:          certDir,
+				CAConfigPath: path.Join(certDir, "ca-config.json"),
+				ExtraOpts: map[string]string{
+					"hostname": ip + ",127.0.0.1",
+				},
+			}
+
+			err = certificates.CreateCert(etcdCertConfig)
+			if err != nil {
+				return err
+			}
+		}
+
+		// conroller cert
+		if strings.Contains(container, "controller") {
+			controllerCertConfig := certs.CertConfig{
+				Name: "kubernetes",
+				CN:   "kubernetes",
+				CA: certs.CAConfig{
+					Name: "ca",
+					Dir:  certDir,
+					CN:   "Kubernetes",
+				},
+				Dir:          certDir,
+				CAConfigPath: path.Join(certDir, "ca-config.json"),
+				ExtraOpts: map[string]string{
+					"hostname": ip + ",127.0.0.1",
+				},
+			}
+
+			err = certificates.CreateCert(controllerCertConfig)
+			if err != nil {
+				return err
+			}
+		}
+
+		// TDOO: probably going to have to move this out
+		// worker cert
+		if strings.Contains(container, "worker") {
+			workerCertConfig := certs.CertConfig{
+				Name:     "node:" + container,
+				FileName: container,
+				CN:       "system:node:" + container,
+				CA: certs.CAConfig{
+					Name: "ca",
+					Dir:  certDir,
+					CN:   "Kubernetes",
+				},
+				Dir:          certDir,
+				CAConfigPath: path.Join(certDir, "ca-config.json"),
+				ExtraOpts: map[string]string{
+					"hostname": ip + "," + container,
+				},
+			}
+
+			err = certificates.CreateCert(workerCertConfig)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
 }
-
-//kubedee [options] start <cluster name>             start a cluster
