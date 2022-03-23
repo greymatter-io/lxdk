@@ -111,7 +111,7 @@ func doStart(ctx *cli.Context) error {
 	// TODO: probably going to have to move this out
 	// worker cert
 	workerContainers := state.WorkerContainerNames
-	workerContainers = append(workerContainers, state.WorkerContainerNames...)
+	workerContainers = append(workerContainers, state.ControllerContainerName)
 	for _, container := range workerContainers {
 		ip, err := containers.GetContainerIP(container, is)
 		if err != nil {
@@ -186,7 +186,7 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	err = createControllerKubeconfig(state.ControllerContainerName, path.Join(cacheDir, state.Name), is)
+	err = createControllerKubeconfig(state.ControllerContainerName, path.Join(cacheDir, state.Name), controllerIP, is)
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func doStart(ctx *cli.Context) error {
 	return nil
 }
 
-func createControllerKubeconfig(container, clusterDir string, is lxdclient.InstanceServer) error {
+func createControllerKubeconfig(container, clusterDir, controllerIP string, is lxdclient.InstanceServer) error {
 	ip, err := containers.GetContainerIP(container, is)
 	if err != nil {
 		return err
@@ -348,6 +348,7 @@ func createControllerKubeconfig(container, clusterDir string, is lxdclient.Insta
 		"lxdk",
 		"--certificate-authority="+path.Join(clusterDir, "certificates", "ca.pem"),
 		"--embed-certs=true",
+		"--server=https://"+controllerIP+":6443",
 		"--kubeconfig="+path.Join(clusterDir, "kubeconfigs", "kube-scheduler.kubeconfig"),
 	).CombinedOutput()
 	if err != nil {
@@ -529,7 +530,7 @@ func createWorkerKubeconfig(container, controllerIP, clusterDir string) error {
 	out, err := exec.Command("kubectl",
 		"config",
 		"set-cluster",
-		"kubedee",
+		"lxdk",
 		"--certificate-authority="+path.Join(certDir, "ca.pem"),
 		"--embed-certs=true",
 		"--server=https://"+controllerIP+":6443",
@@ -556,7 +557,7 @@ func createWorkerKubeconfig(container, controllerIP, clusterDir string) error {
 		"config",
 		"set-context",
 		"default",
-		"--cluster=kubedee",
+		"--cluster=lxdk",
 		"--user=kube-proxy",
 		"--kubeconfig="+path.Join(kfgDir, "kube-proxy.kubeconfig"),
 	).CombinedOutput()
@@ -577,7 +578,7 @@ func createWorkerKubeconfig(container, controllerIP, clusterDir string) error {
 	out, err = exec.Command("kubectl",
 		"config",
 		"set-cluster",
-		"kubedee",
+		"lxdk",
 		"--certificate-authority="+path.Join(certDir, "ca.pem"),
 		"--embed-certs=true",
 		"--server=https://"+controllerIP+":6443",
@@ -604,7 +605,7 @@ func createWorkerKubeconfig(container, controllerIP, clusterDir string) error {
 		"config",
 		"set-context",
 		"default",
-		"--cluster=kubedee",
+		"--cluster=lxdk",
 		"--user=system:node:"+container,
 		"--kubeconfig="+path.Join(kfgDir, container+"-kubelet.kubeconfig"),
 	).CombinedOutput()
@@ -632,7 +633,7 @@ func createAdminKubeconfig(clusterDir, controllerIP string) error {
 	out, err := exec.Command("kubectl",
 		"config",
 		"set-cluster",
-		"kubedee",
+		"lxdk",
 		"--certificate-authority="+path.Join(certDir, "ca.pem"),
 		"--embed-certs=true",
 		"--server=https://"+controllerIP+":6443",
@@ -659,7 +660,7 @@ func createAdminKubeconfig(clusterDir, controllerIP string) error {
 		"config",
 		"set-context",
 		"default",
-		"--cluster=kubedee",
+		"--cluster=lxdk",
 		"--user=admin",
 		"--kubeconfig="+path.Join(kfgDir, "admin.kubeconfig"),
 	).CombinedOutput()
