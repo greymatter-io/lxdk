@@ -44,6 +44,11 @@ func doCreate(ctx *cli.Context) error {
 	state.StoragePool = ctx.String("storage-pool")
 	state.NetworkID = ctx.String("network")
 
+	is, err := lxd.InstanceServerConnect()
+	if err != nil {
+		return err
+	}
+
 	cacheDir := ctx.String("cache")
 
 	if ctx.Args().Len() == 0 {
@@ -54,13 +59,13 @@ func doCreate(ctx *cli.Context) error {
 
 	path := path.Join(cacheDir, clusterName)
 
-	_, err := os.Stat(path)
+	_, err = os.Stat(path)
 	if err == nil {
 		return errors.Errorf("cluster %s already exists at path %s", clusterName, path)
 	}
 
 	if state.NetworkID == "" {
-		networkID, err := createNetwork(state)
+		networkID, err := createNetwork(state, is)
 		if err != nil {
 			return err
 		}
@@ -68,15 +73,10 @@ func doCreate(ctx *cli.Context) error {
 	}
 
 	if state.StoragePool == "" {
-		state.StoragePool, err = createStoragePool(state)
+		state.StoragePool, err = createStoragePool(state, is)
 		if err != nil {
 			return err
 		}
-	}
-
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return err
 	}
 
 	err = containers.CreateContainerProfile(is)
@@ -110,19 +110,13 @@ func doCreate(ctx *cli.Context) error {
 	return nil
 }
 
-func createNetwork(state config.ClusterState) (string, error) {
+func createNetwork(state config.ClusterState, is lxdclient.InstanceServer) (string, error) {
 	networkID := "lxdk-" + state.Name
-
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return "", err
-	}
 
 	networkPost := api.NetworksPost{}
 	networkPost.Name = networkID
 	networkPost.Config = map[string]string{"ipv6.address": "none"}
-	is.CreateNetwork(networkPost)
-
+	err := is.CreateNetwork(networkPost)
 	return networkID, err
 }
 
@@ -243,17 +237,12 @@ func createCerts(cacheDir string) error {
 	return nil
 }
 
-func createStoragePool(state config.ClusterState) (string, error) {
-	is, err := lxd.InstanceServerConnect()
-	if err != nil {
-		return "", err
-	}
-
+func createStoragePool(state config.ClusterState, is lxdclient.InstanceServer) (string, error) {
 	stPoolPost := api.StoragePoolsPost{
 		Name:   "lxdk-" + state.Name,
 		Driver: state.StorageDriver,
 	}
-	err = is.CreateStoragePool(stPoolPost)
+	err := is.CreateStoragePool(stPoolPost)
 	if err != nil {
 		return "", err
 	}
