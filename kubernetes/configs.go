@@ -2,7 +2,7 @@ package kubernetes
 
 import "fmt"
 
-// TODO: better way to do this?
+// TODO: templating engine text/template
 func WorkerRegistriesConfig(registryName, registryIP string) []byte {
 	return []byte(fmt.Sprintf(`unqualified-search-registries = ['docker.io']
 [[registry]]

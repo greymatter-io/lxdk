@@ -71,7 +71,11 @@ func CreateContainer(config ContainerConfig, is lxdclient.InstanceServer) (strin
 		},
 		Type: "container",
 	}
-	conf.Profiles = []string{"lxdk"}
+	conf.Config = map[string]string{"raw.lxc": "lxc.apparmor.allow_incomplete=1"}
+
+	if !strings.Contains(conf.Name, "etcd") {
+		conf.Profiles = []string{"lxdk"}
+	}
 
 	if config.ImageName == "registry" {
 		conf.Source.Alias = "kubedee-worker"
