@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"strings"
+	"time"
 
 	lxd "github.com/lxc/lxd/client"
 	lxdclient "github.com/lxc/lxd/client"
@@ -122,10 +124,25 @@ func DeleteContainer(name string, is lxd.InstanceServer) error {
 	return nil
 }
 
-func GetContainerIP(name string, is lxd.InstanceServer) (string, error) {
+func WaitContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
+	var ip net.IP
+	var err error
+	ip, err = GetContainerIP(name, is)
+	for c := 0; c < 50 && err != nil; c++ {
+		log.Default().Printf("waiting for %s to get an IP address...", name)
+		time.Sleep(2 * time.Second)
+		ip, err = GetContainerIP(name, is)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return ip, nil
+}
+
+func GetContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
 	in, _, err := is.GetInstanceFull(name)
 	if err != nil {
-		return "", fmt.Errorf("error getting instance: %w", err)
+		return nil, fmt.Errorf("error getting instance: %w", err)
 	}
 
 	var ips []string
@@ -146,10 +163,15 @@ func GetContainerIP(name string, is lxd.InstanceServer) (string, error) {
 	}
 
 	if len(ips) == 0 {
-		return "", fmt.Errorf("container %s has no IP address", name)
+		return nil, fmt.Errorf("container %s has no IP address", name)
 	}
 
-	return ips[0], nil
+	ip := net.ParseIP(ips[0])
+	if ip == nil {
+		return nil, fmt.Errorf("not a valid ip: %s", ips[0])
+	}
+
+	return ip, nil
 }
 
 func createID() string {

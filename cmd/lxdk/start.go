@@ -46,7 +46,7 @@ func doStart(ctx *cli.Context) error {
 	}
 
 	for _, container := range state.Containers {
-		ip, err := containers.GetContainerIP(container, is)
+		ip, err := containers.WaitContainerIP(container, is)
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func doStart(ctx *cli.Context) error {
 				Dir:          certDir,
 				CAConfigPath: path.Join(certDir, "ca-config.json"),
 				ExtraOpts: map[string]string{
-					"hostname": ip + ",127.0.0.1",
+					"hostname": ip.String() + ",127.0.0.1",
 				},
 			}
 
@@ -87,7 +87,7 @@ func doStart(ctx *cli.Context) error {
 				Dir:          certDir,
 				CAConfigPath: path.Join(certDir, "ca-config.json"),
 				ExtraOpts: map[string]string{
-					"hostname": ip + ",127.0.0.1",
+					"hostname": ip.String() + ",127.0.0.1",
 				},
 			}
 
@@ -112,7 +112,7 @@ func doStart(ctx *cli.Context) error {
 				Dir:          certDir,
 				CAConfigPath: path.Join(certDir, "ca-config.json"),
 				ExtraOpts: map[string]string{
-					"hostname": ip + "," + container,
+					"hostname": ip.String() + "," + container,
 				},
 			}
 
