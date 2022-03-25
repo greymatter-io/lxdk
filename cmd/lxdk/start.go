@@ -59,7 +59,7 @@ func doStart(ctx *cli.Context) error {
 	}
 
 	// etcd cert
-	etcdIP, err := containers.GetContainerIP(state.EtcdContainerName, is)
+	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, is)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func doStart(ctx *cli.Context) error {
 	}
 
 	// controller cert
-	controllerIP, err := containers.GetContainerIP(state.ControllerContainerName, is)
+	controllerIP, err := containers.WaitContainerIP(state.ControllerContainerName, is)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func doStart(ctx *cli.Context) error {
 	workerContainers := state.WorkerContainerNames
 	workerContainers = append(workerContainers, state.ControllerContainerName)
 	for _, container := range workerContainers {
-		ip, err := containers.GetContainerIP(container, is)
+		ip, err := containers.WaitContainerIP(container, is)
 		if err != nil {
 			return err
 		}
@@ -131,6 +131,7 @@ func doStart(ctx *cli.Context) error {
 			ExtraOpts: map[string]string{
 				"hostname": ip + "," + container,
 			},
+			JSONOverride: certs.CertJSON("system:node:"+container, "system:nodes"),
 		}
 
 		err = certificates.CreateCert(workerCertConfig)
@@ -232,7 +233,7 @@ func doStart(ctx *cli.Context) error {
 
 	// configure controller as worker
 	// configure worker(s)
-	registryIP, err := containers.GetContainerIP(state.RegistryContainerName, is)
+	registryIP, err := containers.WaitContainerIP(state.RegistryContainerName, is)
 	if err != nil {
 		return err
 	}
@@ -289,7 +290,7 @@ func doStart(ctx *cli.Context) error {
 }
 
 func createControllerKubeconfig(container, clusterDir, controllerIP string, is lxdclient.InstanceServer) error {
-	ip, err := containers.GetContainerIP(container, is)
+	ip, err := containers.WaitContainerIP(container, is)
 	if err != nil {
 		return err
 	}
@@ -380,6 +381,16 @@ func createControllerKubeconfig(container, clusterDir, controllerIP string, is l
 		return fmt.Errorf("error on 'kubectl set-context': %s", out)
 	}
 
+	out, err = exec.Command("kubectl",
+		"config",
+		"use-context",
+		"default",
+		"--kubeconfig="+path.Join(clusterDir, "kubeconfigs", "kube-scheduler.kubeconfig"),
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on 'kubectl set-context': %s", out)
+	}
+
 	return nil
 }
 
@@ -454,7 +465,7 @@ func configureWorker(wc workerConfig, is lxdclient.InstanceServer) error {
 		}
 	}
 
-	for _, dev := range []string{"kvm", "net/tun", "vhost-net", "vhost-vsock", "vsock"} {
+	for _, dev := range []string{"net/tun", "vhost-net", "vhost-vsock", "vsock"} {
 		newDevices.Devices[strings.ReplaceAll(dev, "/", "-")] = map[string]string{
 			"type":   "unix-char",
 			"source": path.Join("/dev", dev),

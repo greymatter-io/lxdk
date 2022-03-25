@@ -63,9 +63,13 @@ build {
   provisioner "shell" {
     inline = [
       "apt-get update -y",
-      "apt-get install -y libgpgme11 kitty-terminfo htop jq socat curl",
+      "apt-get install -y libgpgme11 kitty-terminfo htop jq socat curl iptables cloud-init",
       "rm -rf /var/cache/apt",
-    ]
+      "mkdir -p /opt/cni/bin",
+      "curl -fsSL https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz | tar -xzC /opt/cni/bin",
+      "curl -fsSLo /opt/cni/bin/flannel https://github.com/flannel-io/cni-plugin/releases/download/v1.0.1/flannel-amd64",
+      "chmod +x /opt/cni/bin/flannel",
+      ]
   }
 
   provisioner "shell" {

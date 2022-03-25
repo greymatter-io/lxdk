@@ -10,6 +10,7 @@ import (
 	"path"
 	"strings"
 	"syscall"
+	"time"
 
 	lxd "github.com/lxc/lxd/client"
 	lxdclient "github.com/lxc/lxd/client"
@@ -41,6 +42,7 @@ func CreateContainerProfile(is lxdclient.InstanceServer) error {
 	newProf.Config = map[string]string{
 		"raw.lxc": `lxc.apparmor.profile=unconfined
 lxc.mount.auto=proc:rw sys:rw cgroup:rw
+lxc.proc.vm.overcommit_memory=1
 lxc.init.cmd=/sbin/init systemd.unified_cgroup_hierarchy=0
 lxc.cgroup.devices.allow=a
 lxc.cgroup2.devices.allow=a
@@ -48,7 +50,7 @@ lxc.cap.drop=
 lxc.apparmor.allow_incomplete=1`,
 		"security.privileged":  "true",
 		"security.nesting":     "true",
-		"linux.kernel_modules": "ip_tables,ip6_tables,netlink_diag,nf_nat,overlay,kvm,vhost-net,vhost-scsi,vhost-vsock,vsock",
+		"linux.kernel_modules": "ip_tables,ip6_tables,netlink_diag,nf_nat,overlay,vhost-net,vhost-scsi,vhost-vsock,vsock",
 	}
 
 	err = is.CreateProfile(newProf)
@@ -172,6 +174,21 @@ func DeleteContainer(name string, is lxd.InstanceServer) error {
 	}
 
 	return nil
+}
+
+func WaitContainerIP(name string, is lxd.InstanceServer) (string, error) {
+	var ip string
+	var err error
+	ip, err = GetContainerIP(name, is)
+	for c := 0; c < 50 && err != nil; c++ {
+		log.Default().Printf("waiting for %s to get an IP address...", name)
+		time.Sleep(2 * time.Second)
+		ip, err = GetContainerIP(name, is)
+	}
+	if err != nil {
+		return "", err
+	}
+	return ip, nil
 }
 
 func GetContainerIP(name string, is lxd.InstanceServer) (string, error) {
