@@ -5,4 +5,4 @@ steps:
       - ./scripts/cibuild build
       - ./scripts/test
     agents:
-      container_image: ubuntu-2104-ci
+      container_image: ubuntu-2110-ci
