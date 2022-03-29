@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,9 +13,11 @@ import (
 )
 
 func WaitAPIServerReady(clientset kubernetes.Clientset) error {
-	_, err := clientset.RbacV1().ClusterRoles().Get(context.Background(), "", v1.GetOptions{})
+	_, err := clientset.RbacV1().ClusterRoles().List(context.Background(), v1.ListOptions{})
 	for c := 0; c < 50 && err != nil; c++ {
-		time.Sleep(3)
+		log.Default().Println("waiting for API server...", err.Error())
+		time.Sleep(3 * time.Second)
+		_, err = clientset.RbacV1().ClusterRoles().Get(context.Background(), "", v1.GetOptions{})
 	}
 
 	return nil

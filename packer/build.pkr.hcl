@@ -111,12 +111,21 @@ build {
     destination = "/etc/systemd/system/kubelet.service"
   }
 
-  # crio.service
-  provisioner "file" {
-    only        = ["lxd.kubedee-controller", "lxd.kubedee-worker"]
-    source      = "./templates/crio/crio.service.pkrtpl.hcl"
-    destination = "/etc/systemd/system/crio.service"
+  provisioner "shell" {
+    only             = ["lxd.kubedee-controller", "lxd.kubedee-worker"]
+    inline           = [
+        "sudo systemctl daemon-reload",
+        "sudo systemctl enable crio",
+        "sudo systemctl start crio",
+    ]
   }
+
+  /*# crio.service*/
+  /*provisioner "file" {*/
+    /*only        = ["lxd.kubedee-controller", "lxd.kubedee-worker"]*/
+    /*source      = "./templates/crio/crio.service.pkrtpl.hcl"*/
+    /*destination = "/etc/systemd/system/crio.service"*/
+  /*}*/
 
   #kube-scheduler.service 
   provisioner "file" {
@@ -170,15 +179,14 @@ build {
     destination = "/etc/kubernetes/config/kube-scheduler.yaml"
   }
 
-  provisioner "file" {
-    only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]
-    sources     = [
-        "./templates/crio/crictl.yaml.pkrtpl.hcl",
-        "./templates/crio/crio-umount.conf.pkrtpl.hcl",
-        "./templates/crio/crio.conf.pkrtpl.hcl",
-        "./templates/crio/crio.service.pkrtpl.hcl",
-        "./templates/crio/policy.json.pkrtpl.hcl",
-    ]
-    destination = "/etc/crio/"
-  }
+  /*provisioner "file" {*/
+    /*only             = ["lxd.kubedee-worker", "lxd.kubedee-controller"]*/
+    /*sources     = [*/
+        /*"./templates/crio/crictl.yaml.pkrtpl.hcl",*/
+        /*"./templates/crio/crio-umount.conf.pkrtpl.hcl",*/
+        /*"./templates/crio/crio.service.pkrtpl.hcl",*/
+        /*"./templates/crio/policy.json.pkrtpl.hcl",*/
+    /*]*/
+    /*destination = "/etc/crio/"*/
+  /*}*/
 }

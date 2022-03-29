@@ -42,7 +42,6 @@ func CreateContainerProfile(is lxdclient.InstanceServer) error {
 	newProf.Config = map[string]string{
 		"raw.lxc": `lxc.apparmor.profile=unconfined
 lxc.mount.auto=proc:rw sys:rw cgroup:rw
-lxc.proc.vm.overcommit_memory=1
 lxc.init.cmd=/sbin/init systemd.unified_cgroup_hierarchy=0
 lxc.cgroup.devices.allow=a
 lxc.cgroup2.devices.allow=a

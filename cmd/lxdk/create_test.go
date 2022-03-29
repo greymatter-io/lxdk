@@ -106,7 +106,7 @@ func TestCreateNetwork(t *testing.T) {
 		Name: "test",
 	}
 
-	networkID, err := createNetwork(state)
+	networkID, err := createNetwork(state, is)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,3 +1,5 @@
+# TODO: delete this entire thing, it's not part of the build anymore
+
 # The CRI-O configuration file specifies all of the available configuration
 # options and command-line flags for the crio(8) OCI Kubernetes Container Runtime
 # daemon, but in a TOML format that can be more easily modified and versioned.
@@ -259,40 +261,10 @@ pinns_path = ""
 # - runtime_root (optional, string): root directory for storage of containers
 #   state.
 
-
 [crio.runtime.runtimes.runc]
 runtime_path = "/usr/local/bin/runc"
 runtime_type = "oci"
 runtime_root = "/run/runc"
-
-
-# Kata Containers is an OCI runtime, where containers are run inside lightweight
-# VMs. Kata provides additional isolation towards the host, minimizing the host attack
-# surface and mitigating the consequences of containers breakout.
-
-# Kata Containers with the default configured VMM
-#[crio.runtime.runtimes.kata-runtime]
-#privileged_without_host_devices = true
-#runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
-#runtime_type = "vm"
-
-# Kata Containers with the QEMU VMM
-[crio.runtime.runtimes.kata-qemu]
-privileged_without_host_devices = true
-runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
-runtime_type = "vm"
-
-# Kata Containers with the Firecracker VMM
-[crio.runtime.runtimes.kata-fc]
-privileged_without_host_devices = true
-runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
-runtime_type = "vm"
-
-# Kata Containers with the Cloud-Hypervisor VMM
-[crio.runtime.runtimes.kata-clh]
-privileged_without_host_devices = true
-runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
-runtime_type = "vm"
 
 # The crio.image table contains settings pertaining to the management of OCI images.
 #
