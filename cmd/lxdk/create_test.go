@@ -3,16 +3,13 @@ package main
 import (
 	"crypto/x509"
 	"encoding/pem"
-	"flag"
 	"io/ioutil"
-	"os"
 	"path"
 	"testing"
 
 	"github.com/greymatter-io/lxdk/config"
 	"github.com/greymatter-io/lxdk/lxd"
 	"github.com/greymatter-io/lxdk/testutils"
-	"github.com/urfave/cli/v2"
 )
 
 // TestCertChains tests that the generated certs are signed by the proper
@@ -24,29 +21,18 @@ func TestCertChains(t *testing.T) {
 	}
 	defer cleanup()
 
-	flags := flag.NewFlagSet("testflags", flag.ErrorHandling(2))
-	ctx := cli.NewContext(cli.NewApp(), flags, &cli.Context{})
-
-	os.Setenv("LXDK_CACHE", tmpDir)
-	err = app.RunContext(ctx.Context, []string{"lxdk", "create", "test"})
+	err = createCerts(tmpDir)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer func() {
-		err = app.RunContext(ctx.Context, []string{"lxdk", "delete", "test"})
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
+	caPath := path.Join(tmpDir, "certificates", "ca.pem")
+	caAggregationPath := path.Join(tmpDir, "certificates", "ca-aggregation.pem")
 
-	caPath := path.Join(tmpDir, "test", "certificates", "ca.pem")
-	caAggregationPath := path.Join(tmpDir, "test", "certificates", "ca-aggregation.pem")
-
-	adminPath := path.Join(tmpDir, "test", "certificates", "admin.pem")
-	aggregationClientPath := path.Join(tmpDir, "test", "certificates", "aggregation-client.pem")
-	kubeControllerManagerPath := path.Join(tmpDir, "test", "certificates", "kube-controller-manager.pem")
-	kubeSchedulerPath := path.Join(tmpDir, "test", "certificates", "kube-scheduler.pem")
+	adminPath := path.Join(tmpDir, "certificates", "admin.pem")
+	aggregationClientPath := path.Join(tmpDir, "certificates", "aggregation-client.pem")
+	kubeControllerManagerPath := path.Join(tmpDir, "certificates", "kube-controller-manager.pem")
+	kubeSchedulerPath := path.Join(tmpDir, "certificates", "kube-scheduler.pem")
 
 	// admin should be signed by "ca"
 	testCertSigned(adminPath, caPath, t)
@@ -97,6 +83,8 @@ func testCertSigned(certPath, caPath string, t *testing.T) {
 }
 
 func TestCreateNetwork(t *testing.T) {
+	testFast(t)
+
 	is, err := lxd.InstanceServerConnect()
 	if err != nil {
 		t.Fatal(err)

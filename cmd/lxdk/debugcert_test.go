@@ -13,6 +13,8 @@ import (
 // TestDebugCert tests that the debug-cert command works by ensuring the
 // admin.pem cert is properly signed by ca.pem.
 func TestDebugCert(t *testing.T) {
+	testFast(t)
+
 	tmpDir, cleanup, err := testutils.TempDir()
 	if err != nil {
 		t.Fatal(err)

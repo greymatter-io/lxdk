@@ -5,6 +5,7 @@ import (
 	"encoding/pem"
 	"flag"
 	"io/ioutil"
+	"net"
 	"os"
 	"path"
 	"strings"
@@ -18,8 +19,10 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func testFast() bool {
-	return strings.ToLower(os.Getenv("TEST_FAST")) == "true"
+func testFast(t *testing.T) {
+	if strings.ToLower(os.Getenv("TEST_FAST")) == "true" {
+		t.Skip("TEST_FAST is true, skipping...")
+	}
 }
 
 func startCluster(t *testing.T) (func(), string) {
@@ -52,9 +55,7 @@ func startCluster(t *testing.T) (func(), string) {
 }
 
 func TestClusterStarted(t *testing.T) {
-	if testFast() {
-		t.Skip("TEST_FAST is true, skipping...")
-	}
+	testFast(t)
 
 	cleanup, tmpDir := startCluster(t)
 	defer cleanup()
@@ -88,13 +89,7 @@ func TestClusterStarted(t *testing.T) {
 }
 
 func TestCertificatesCreated(t *testing.T) {
-	if testFast() {
-		t.Skip("TEST_FAST is true, skipping...")
-	}
-
-	if strings.ToLower(os.Getenv("TEST_FAST")) == "true" {
-		t.Skip("TEST_FAST is true, skipping...")
-	}
+	testFast(t)
 
 	cleanup, tmpDir := startCluster(t)
 	defer cleanup()
@@ -115,19 +110,19 @@ func TestCertificatesCreated(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var etcdIP string
-	var controllerIP string
-	var workerIP string
+	var etcdIP net.IP
+	var controllerIP net.IP
+	var workerIP net.IP
 	var workerName string
 	for _, container := range state.Containers {
 		if strings.Contains(container, "etcd") {
-			etcdIP, err = containers.GetContainerIP(container, is)
+			etcdIP, err = containers.WaitContainerIP(container, is)
 		}
 		if strings.Contains(container, "controller") {
-			controllerIP, err = containers.GetContainerIP(container, is)
+			controllerIP, err = containers.WaitContainerIP(container, is)
 		}
 		if strings.Contains(container, "worker") {
-			workerIP, err = containers.GetContainerIP(container, is)
+			workerIP, err = containers.WaitContainerIP(container, is)
 			workerName = container
 		}
 		if err != nil {
@@ -140,19 +135,17 @@ func TestCertificatesCreated(t *testing.T) {
 	workerPath := path.Join(tmpDir, "test", "certificates", workerName+".pem")
 
 	// etcd cert
-	testHostnames(etcdPath, []string{etcdIP, "127.0.0.1"}, t)
+	testHostnames(etcdPath, []string{etcdIP.String(), "127.0.0.1"}, t)
 
 	// controller cert
-	testHostnames(controllerPath, []string{controllerIP, "127.0.0.1"}, t)
+	testHostnames(controllerPath, []string{controllerIP.String(), "127.0.0.1"}, t)
 
 	// worker cert
-	testHostnames(workerPath, []string{workerIP, workerName}, t)
+	testHostnames(workerPath, []string{workerIP.String(), workerName}, t)
 }
 
 func TestStartedCertChains(t *testing.T) {
-	if testFast() {
-		t.Skip("TEST_FAST is true, skipping...")
-	}
+	testFast(t)
 
 	cleanup, tmpDir := startCluster(t)
 	defer cleanup()
