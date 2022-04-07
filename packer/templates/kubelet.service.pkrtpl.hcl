@@ -4,7 +4,7 @@ After=crio.service
 Requires=crio.service
 
 [Service]
-EnvironmentFile=
+EnvironmentFile=/etc/lxdk/env
 ExecStart=/usr/local/bin/kubelet \
   --cgroup-driver=systemd \
   --config=/etc/kubernetes/config/kubelet.yaml \
@@ -13,11 +13,10 @@ ExecStart=/usr/local/bin/kubelet \
   --image-service-endpoint=unix:///var/run/crio/crio.sock \
   --kubeconfig=/etc/kubernetes/${CONTAINER_NAME}-kubelet.kubeconfig \
   --network-plugin=cni \
-  --register-node=true \
+  --enforce-node-allocatable="" \
   --v=2
 Restart=on-failure
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-

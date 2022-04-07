@@ -1,3 +1,9 @@
 bin/*
 vendor/*
 .idea/
+*.log
+vagrant/.vagrant/*
+*.zip
+*.gz
+vagrant/kubectl
+vagrant/packer

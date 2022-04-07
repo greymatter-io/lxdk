@@ -14,6 +14,11 @@ type ClusterState struct {
 	NetworkID  string   `toml:"network_id"`
 	Containers []string `toml:"containers"`
 
+	EtcdContainerName       string   `toml:"etcd_container_name"`
+	ControllerContainerName string   `toml:"controller_container_name"`
+	RegistryContainerName   string   `toml:"registry_container_name"`
+	WorkerContainerNames    []string `toml:"worker_container_names"`
+
 	StorageDriver string `toml:"storage_driver"`
 	StoragePool   string `toml:"storage_pool"`
 }

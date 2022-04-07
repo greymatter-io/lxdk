@@ -1,9 +1,21 @@
 #!/bin/bash
 
-set -u
+# TODO: use variable for version
 
-dl_dir="$(mktemp -d /tmp/kubedee-crio-XXXXXX)"
-pushd $dl_dir
+set -eu
 
-curl -fsSl -o - "$crio_url" | tar -xzf -
-mv cri-o/bin/* /usr/local/bin/
+apt-get install wget runc
+
+wget "https://storage.googleapis.com/cri-o/artifacts/cri-o.amd64.c0b2474b80fd0844b883729bda88961bed7b472b.tar.gz"
+tar -xvf "cri-o.amd64.c0b2474b80fd0844b883729bda88961bed7b472b.tar.gz"
+
+bin_dir="cri-o/bin"
+cp ${bin_dir}/crio /usr/local/bin/
+cp ${bin_dir}/conmon /usr/local/bin/
+cp ${bin_dir}/pinns /usr/local/bin/
+
+mkdir -p /etc/crio
+cp cri-o/etc/crio.conf /etc/crio/
+cp cri-o/etc/crictl.yaml /etc/crio/
+cp cri-o/etc/crio-umount.conf /etc/crio/
+cp cri-o/contrib/policy.json /etc/crio/

@@ -85,7 +85,7 @@ func testCertSigned(certPath, caPath string, t *testing.T) {
 func TestCreateNetwork(t *testing.T) {
 	testFast(t)
 
-	is, err := lxd.InstanceServerConnect()
+	is, _, err := lxd.InstanceServerConnect()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestCreateNetwork(t *testing.T) {
 		Name: "test",
 	}
 
-	networkID, err := createNetwork(state)
+	networkID, err := createNetwork(state, is)
 	if err != nil {
 		t.Fatal(err)
 	}
