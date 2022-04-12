@@ -34,6 +34,11 @@ var (
 				Name:  "network",
 				Usage: "network id of lxd network to use, overrides network creation",
 			},
+			&cli.IntFlag{
+				Name:  "num-workers",
+				Usage: "the number of worker nodes to create",
+				Value: 1,
+			},
 		},
 		Action: doCreate,
 	}
@@ -100,17 +105,19 @@ func doCreate(ctx *cli.Context) error {
 		}
 	}
 
-	containerNames, err := createContainers(state, is)
+	containerNames, err := createContainers(state, ctx.Int("num-workers"), is)
 	if err != nil {
 		return err
 	}
-	state.EtcdContainerName = containerNames["etcd"]
-	state.ControllerContainerName = containerNames["controller"]
-	state.RegistryContainerName = containerNames["registry"]
-	state.WorkerContainerNames = []string{containerNames["worker"]}
+	state.EtcdContainerName = containerNames["etcd"][0]
+	state.ControllerContainerName = containerNames["controller"][0]
+	state.RegistryContainerName = containerNames["registry"][0]
+	state.WorkerContainerNames = containerNames["worker"]
 
-	for _, name := range containerNames {
-		state.Containers = append(state.Containers, name)
+	for _, names := range containerNames {
+		for _, name := range names {
+			state.Containers = append(state.Containers, name)
+		}
 	}
 
 	err = createCerts(path)
@@ -266,22 +273,30 @@ func createStoragePool(state config.ClusterState, is lxdclient.InstanceServer) (
 	return stPoolPost.Name, nil
 }
 
-func createContainers(state config.ClusterState, is lxdclient.InstanceServer) (map[string]string, error) {
-	created := make(map[string]string)
+func createContainers(state config.ClusterState, numWorkers int, is lxdclient.InstanceServer) (map[string][]string, error) {
+	created := make(map[string][]string)
+	created["worker"] = []string{}
 	for _, image := range []string{"etcd", "controller", "worker", "registry"} {
-		conf := containers.ContainerConfig{
-			ImageName:   image,
-			ClusterName: state.Name,
-			StoragePool: state.StoragePool,
-			NetworkID:   state.NetworkID,
-		}
-		containerName, err := containers.CreateContainer(conf, is)
+		for i := 0; i < numWorkers; i++ {
+			conf := containers.ContainerConfig{
+				ImageName:   image,
+				ClusterName: state.Name,
+				StoragePool: state.StoragePool,
+				NetworkID:   state.NetworkID,
+			}
+			containerName, err := containers.CreateContainer(conf, is)
 
-		if err != nil {
-			return nil, err
-		}
+			if err != nil {
+				return nil, err
+			}
 
-		created[image] = containerName
+			if image != "worker" {
+				created[image] = []string{containerName}
+				break
+			}
+
+			created["worker"] = append(created["worker"], containerName)
+		}
 	}
 
 	return created, nil
