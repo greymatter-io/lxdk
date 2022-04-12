@@ -236,6 +236,7 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
+	// expose Kubernetes API server
 	var newDevices api.InstancePut
 	newDevices = in.InstancePut
 	newDevices.Devices["k8s6443"] = map[string]string{
@@ -251,11 +252,23 @@ func doStart(ctx *cli.Context) error {
 		if err != nil {
 			return err
 		}
-		if source, ok := pool.Config["source"]; ok {
-			newDevices.Devices["btrfsmnt"] = map[string]string{
-				"type":   "unix-block",
-				"source": source,
-				"path":   source,
+		if pool.Driver == "btrfs" {
+			if source, ok := pool.Config["source"]; ok {
+				// Get the actual mount path for a device if it
+				// is configured with a UUID. A slash at the
+				// beginning is our heuristic for determining if
+				// an lxc source is a path or UUID.
+				if !strings.HasPrefix(source, "/") {
+					source, err = lxd.GetDeviceByUUID(source)
+					if err != nil {
+						return err
+					}
+				}
+				newDevices.Devices["btrfsmnt"] = map[string]string{
+					"type":   "unix-block",
+					"source": source,
+					"path":   source,
+				}
 			}
 		}
 	}
