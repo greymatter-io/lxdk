@@ -77,3 +77,30 @@ func IsSnap() (bool, error) {
 
 	return false, nil
 }
+
+// GetDeviceByUUID gets a block device's mount path (/dev/device) from it's
+// UUID. LXD does not guarantee that the mount path of the device a storage pool
+// points to doesn't change, but UUID is more stable.
+func GetDeviceByUUID(uuid string) (string, error) {
+	cmd := exec.Command("blkid", "-o", "export")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf(string(out))
+	}
+
+	devs := strings.Split(string(out), "\n\n")
+	for _, dev := range devs {
+		if strings.Contains(dev, uuid) {
+			eqIndex := strings.Index(dev, "=")
+			newlineIndex := strings.Index(dev, "\n")
+
+			if eqIndex == -1 || newlineIndex == -1 {
+				return "", fmt.Errorf("blkid output malformed")
+			}
+
+			return dev[eqIndex+1 : newlineIndex], nil
+		}
+	}
+
+	return "", fmt.Errorf("could not locate device with uuid: %s", uuid)
+}
