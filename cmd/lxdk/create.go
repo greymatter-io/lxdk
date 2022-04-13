@@ -82,6 +82,7 @@ func doCreate(ctx *cli.Context) error {
 	}
 
 	if state.StoragePool == "" {
+		state.StoragePoolManaged = true
 		state.StoragePool, err = createStoragePool(state, is)
 		if err != nil {
 			if err := deleteNetwork(state, is); err != nil {
