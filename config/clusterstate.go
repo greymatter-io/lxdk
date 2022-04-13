@@ -30,8 +30,9 @@ type ClusterState struct {
 	RegistryContainerName   string   `toml:"registry_container_name"`
 	WorkerContainerNames    []string `toml:"worker_container_names"`
 
-	StorageDriver string `toml:"storage_driver"`
-	StoragePool   string `toml:"storage_pool"`
+	StorageDriver      string `toml:"storage_driver"`
+	StoragePool        string `toml:"storage_pool"`
+	StoragePoolManaged bool   `toml:"storage_pool_managed"`
 }
 
 func ClusterStateFromContext(ctx *cli.Context) (ClusterState, error) {
