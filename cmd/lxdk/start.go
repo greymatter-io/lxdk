@@ -111,34 +111,11 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	// TODO: probably going to have to move this out
 	// worker cert
 	workerContainers := state.WorkerContainerNames
 	workerContainers = append(workerContainers, state.ControllerContainerName)
 	for _, container := range workerContainers {
-		ip, err := containers.WaitContainerIP(container, is)
-		if err != nil {
-			return err
-		}
-		workerCertConfig := certs.CertConfig{
-			Name:     "node:" + strings.ToLower(container),
-			FileName: strings.ToLower(container),
-			CN:       "system:node:" + strings.ToLower(container),
-			CA: certs.CAConfig{
-				Name: "ca",
-				Dir:  certDir,
-				CN:   "Kubernetes",
-			},
-			Dir:          certDir,
-			CAConfigPath: path.Join(certDir, "ca-config.json"),
-			ExtraOpts: map[string]string{
-				"hostname": ip.String() + "," + container,
-			},
-			JSONOverride: certs.CertJSON("system:node:"+strings.ToLower(container), "system:nodes"),
-		}
-
-		err = certificates.CreateCert(workerCertConfig)
-		if err != nil {
+		if err = createWorkerCert(container, certDir, is); err != nil {
 			return err
 		}
 	}
@@ -383,6 +360,31 @@ func doStart(ctx *cli.Context) error {
 	// create serviceaccounts
 
 	return nil
+}
+
+func createWorkerCert(worker, certDir string, is lxdclient.InstanceServer) error {
+	ip, err := containers.WaitContainerIP(worker, is)
+	if err != nil {
+		return err
+	}
+	workerCertConfig := certs.CertConfig{
+		Name:     "node:" + strings.ToLower(worker),
+		FileName: strings.ToLower(worker),
+		CN:       "system:node:" + strings.ToLower(worker),
+		CA: certs.CAConfig{
+			Name: "ca",
+			Dir:  certDir,
+			CN:   "Kubernetes",
+		},
+		Dir:          certDir,
+		CAConfigPath: path.Join(certDir, "ca-config.json"),
+		ExtraOpts: map[string]string{
+			"hostname": ip.String() + "," + worker,
+		},
+		JSONOverride: certs.CertJSON("system:node:"+strings.ToLower(worker), "system:nodes"),
+	}
+
+	return certificates.CreateCert(workerCertConfig)
 }
 
 func createControllerKubeconfig(container, clusterDir, controllerIP string, is lxdclient.InstanceServer) error {
