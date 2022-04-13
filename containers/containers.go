@@ -151,12 +151,12 @@ func StartContainer(containerName string, is lxd.InstanceServer) error {
 	return nil
 }
 
-func DeleteContainer(name string, is lxd.InstanceServer) error {
+func StopContainer(containerName string, is lxd.InstanceServer) error {
 	reqState := api.InstanceStatePut{
 		Action:  "stop",
 		Timeout: -1,
 	}
-	op, err := is.UpdateInstanceState(name, reqState, "")
+	op, err := is.UpdateInstanceState(containerName, reqState, "")
 	if err != nil {
 		return err
 	}
@@ -166,7 +166,15 @@ func DeleteContainer(name string, is lxd.InstanceServer) error {
 		log.Println("instance is already stopped, continuing")
 	}
 
-	op, err = is.DeleteInstance(name)
+	return nil
+}
+
+func DeleteContainer(containerName string, is lxd.InstanceServer) error {
+	if err := StopContainer(containerName, is); err != nil {
+		return err
+	}
+
+	op, err := is.DeleteInstance(containerName)
 	if err != nil {
 		return err
 	}

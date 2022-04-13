@@ -50,6 +50,8 @@ func doCreate(ctx *cli.Context) error {
 	state.StoragePool = ctx.String("storage-pool")
 	state.NetworkID = ctx.String("network")
 
+	state.RunState = config.Uninitialized
+
 	is, _, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
@@ -79,8 +81,13 @@ func doCreate(ctx *cli.Context) error {
 	}
 
 	if state.StoragePool == "" {
+		state.StoragePoolManaged = true
 		state.StoragePool, err = createStoragePool(state, is)
 		if err != nil {
+			if err := deleteNetwork(state, is); err != nil {
+				log.Default().Printf("network %s was not deleted", state.NetworkID)
+			}
+
 			return err
 		}
 	}
@@ -107,6 +114,15 @@ func doCreate(ctx *cli.Context) error {
 
 	containerNames, err := createContainers(state, ctx.Int("num-workers"), is)
 	if err != nil {
+		if err := deleteNetwork(state, is); err != nil {
+			log.Default().Printf("network %s was not deleted", state.NetworkID)
+		}
+		if state.StoragePoolManaged {
+			if err := deleteStoragePool(state, is); err != nil {
+				log.Default().Printf("storage pool %s was not deleted", state.StoragePool)
+			}
+		}
+
 		return err
 	}
 	state.EtcdContainerName = containerNames["etcd"][0]
@@ -120,14 +136,14 @@ func doCreate(ctx *cli.Context) error {
 		}
 	}
 
-	err = createCerts(path)
-	if err != nil {
-		return err
-	}
-
 	err = config.WriteClusterState(ctx, state)
 	if err != nil {
 		return fmt.Errorf("error reading cluster config: %w", err)
+	}
+
+	err = createCerts(path)
+	if err != nil {
+		return err
 	}
 
 	return nil

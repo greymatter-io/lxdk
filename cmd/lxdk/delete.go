@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"path"
 
@@ -54,7 +55,10 @@ func doDelete(ctx *cli.Context) error {
 		return err
 	}
 
-	if ctx.Bool("delete-storage") {
+	if !state.StoragePoolManaged {
+		log.Default().Printf("storage pool %s was not created by lxdk and will not be deleted", state.StoragePool)
+	}
+	if ctx.Bool("delete-storage") && state.StoragePoolManaged {
 		err = deleteStoragePool(state, is)
 		if err != nil {
 			return err
