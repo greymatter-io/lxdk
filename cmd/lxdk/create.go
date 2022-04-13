@@ -50,6 +50,8 @@ func doCreate(ctx *cli.Context) error {
 	state.StoragePool = ctx.String("storage-pool")
 	state.NetworkID = ctx.String("network")
 
+	state.RunState = config.Uninitialized
+
 	is, _, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
