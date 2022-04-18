@@ -220,7 +220,9 @@ func GetContainerLXDIP(name string, is lxd.InstanceServer) (net.IP, error) {
 			}
 
 			if strings.Contains(addr.Family, "inet") && netName != "cni0" && netName != "flannel.1" {
-				ips = append(ips, addr.Address)
+				if strings.Count(addr.Address, ":") < 2 {
+					ips = append(ips, addr.Address)
+				}
 			}
 		}
 	}
