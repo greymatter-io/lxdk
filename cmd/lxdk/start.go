@@ -44,13 +44,20 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	if state.RunState == config.Running {
-		return fmt.Errorf("cluster %s is already running or was not stopped by lxdk", clusterName)
-	}
-
 	is, hostname, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
+	}
+
+	for _, containerName := range state.Containers {
+		state, _, err := is.GetInstanceState(containerName)
+		if err != nil {
+			return err
+		}
+
+		if state.Status == "Running" {
+			return fmt.Errorf("container %s is already running", containerName)
+		}
 	}
 
 	for _, container := range state.Containers {
