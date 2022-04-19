@@ -66,7 +66,7 @@ func doDelete(ctx *cli.Context) error {
 		}
 	}
 
-	if ctx.Bool("delete-network") {
+	if ctx.Bool("delete-network") && state.NetworkManaged {
 		err = deleteNetwork(state, is)
 		if err != nil {
 			return err

@@ -24,6 +24,13 @@ var (
 		Name:   "start",
 		Usage:  "start a cluster",
 		Action: doStart,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "use-remote-ip",
+				Usage: "use the IP of the lxc remote to access the API instead of the controller container",
+				Value: false,
+			},
+		},
 	}
 )
 
@@ -63,7 +70,7 @@ func doStart(ctx *cli.Context) error {
 	}
 
 	// etcd cert
-	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, is)
+	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, []string{hostname}, is)
 	if err != nil {
 		return err
 	}
@@ -87,7 +94,7 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	controllerIP, err := containers.WaitContainerIP(state.ControllerContainerName, is)
+	controllerIP, err := containers.WaitContainerIP(state.ControllerContainerName, []string{hostname}, is)
 	if err != nil {
 		return err
 	}
@@ -115,7 +122,7 @@ func doStart(ctx *cli.Context) error {
 	workerContainers := state.WorkerContainerNames
 	workerContainers = append(workerContainers, state.ControllerContainerName)
 	for _, container := range workerContainers {
-		if err = createWorkerCert(container, certDir, is); err != nil {
+		if err = createWorkerCert(container, certDir, hostname, is); err != nil {
 			return err
 		}
 	}
@@ -167,7 +174,7 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	err = createControllerKubeconfig(state.ControllerContainerName, path.Join(cacheDir, state.Name), controllerIP.String(), is)
+	err = createControllerKubeconfig(state.ControllerContainerName, path.Join(cacheDir, state.Name), controllerIP.String(), hostname, is)
 	if err != nil {
 		return err
 	}
@@ -220,11 +227,6 @@ func doStart(ctx *cli.Context) error {
 	// expose Kubernetes API server
 	var newDevices api.InstancePut
 	newDevices = in.InstancePut
-	newDevices.Devices["k8s6443"] = map[string]string{
-		"type":    "proxy",
-		"listen":  "tcp:0.0.0.0:6443",
-		"connect": "tcp:127.0.0.1:6443",
-	}
 
 	// if not using our own storage pool, mount the storage device the pool
 	// is on, otherwise kubelet can't mount it to get the cni config
@@ -265,7 +267,7 @@ func doStart(ctx *cli.Context) error {
 
 	// configure controller as worker
 	// configure worker(s)
-	registryIP, err := containers.WaitContainerIP(state.RegistryContainerName, is)
+	registryIP, err := containers.WaitContainerIP(state.RegistryContainerName, []string{hostname}, is)
 	if err != nil {
 		return err
 	}
@@ -291,7 +293,7 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	if hostname != "" {
+	if ctx.Bool("use-remote-ip") {
 		err = createClientKubeconfig(path.Join(cacheDir, state.Name), hostname)
 		if err != nil {
 			return err
@@ -362,8 +364,8 @@ func doStart(ctx *cli.Context) error {
 	return nil
 }
 
-func createWorkerCert(worker, certDir string, is lxdclient.InstanceServer) error {
-	ip, err := containers.WaitContainerIP(worker, is)
+func createWorkerCert(worker, certDir, hostname string, is lxdclient.InstanceServer) error {
+	ip, err := containers.WaitContainerIP(worker, []string{hostname}, is)
 	if err != nil {
 		return err
 	}
@@ -387,8 +389,8 @@ func createWorkerCert(worker, certDir string, is lxdclient.InstanceServer) error
 	return certificates.CreateCert(workerCertConfig)
 }
 
-func createControllerKubeconfig(container, clusterDir, controllerIP string, is lxdclient.InstanceServer) error {
-	ip, err := containers.WaitContainerIP(container, is)
+func createControllerKubeconfig(container, clusterDir, controllerIP, hostname string, is lxdclient.InstanceServer) error {
+	ip, err := containers.WaitContainerIP(container, []string{hostname}, is)
 	if err != nil {
 		return err
 	}

@@ -74,6 +74,7 @@ func doCreate(ctx *cli.Context) error {
 	}
 
 	if state.NetworkID == "" {
+		state.NetworkManaged = true
 		networkID, err := createNetwork(state, is)
 		if err != nil {
 			return err

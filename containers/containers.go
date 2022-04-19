@@ -185,14 +185,14 @@ func DeleteContainer(containerName string, is lxd.InstanceServer) error {
 	return nil
 }
 
-func WaitContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
+func WaitContainerIP(name string, blacklist []string, is lxd.InstanceServer) (net.IP, error) {
 	var ip net.IP
 	var err error
-	ip, err = GetContainerLXDIP(name, is)
+	ip, err = GetContainerLXDIP(name, blacklist, is)
 	for c := 0; c < 50 && err != nil; c++ {
 		log.Default().Printf("waiting for %s to get an IP address...", name)
 		time.Sleep(2 * time.Second)
-		ip, err = GetContainerLXDIP(name, is)
+		ip, err = GetContainerLXDIP(name, blacklist, is)
 	}
 	if err != nil {
 		return nil, err
@@ -202,7 +202,7 @@ func WaitContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
 
 // GetContainerLXDIP returns the IP address of the container on the LXD network
 // (and not the cni0 flannel.1 network devices). This is usually on eth0.
-func GetContainerLXDIP(name string, is lxd.InstanceServer) (net.IP, error) {
+func GetContainerLXDIP(name string, blacklist []string, is lxd.InstanceServer) (net.IP, error) {
 	in, _, err := is.GetInstanceFull(name)
 	if err != nil {
 		return nil, fmt.Errorf("error getting instance: %w", err)
@@ -220,7 +220,14 @@ func GetContainerLXDIP(name string, is lxd.InstanceServer) (net.IP, error) {
 			}
 
 			if strings.Contains(addr.Family, "inet") && netName != "cni0" && netName != "flannel.1" {
-				if strings.Count(addr.Address, ":") < 2 {
+				blacklisted := false
+				for _, black := range blacklist {
+					if strings.Contains(addr.Address, black) {
+						blacklisted = true
+						break
+					}
+				}
+				if strings.Count(addr.Address, ":") < 2 && !blacklisted {
 					ips = append(ips, addr.Address)
 				}
 			}

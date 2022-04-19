@@ -18,8 +18,10 @@ const (
 )
 
 type ClusterState struct {
-	Name       string   `toml:"name"`
-	NetworkID  string   `toml:"network_id"`
+	Name           string `toml:"name"`
+	NetworkID      string `toml:"network_id"`
+	NetworkManaged bool   `toml:"network_managed"`
+
 	Containers []string `toml:"containers"`
 
 	RunState RunState `toml:"run_state"`
