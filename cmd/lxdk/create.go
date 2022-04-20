@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	certs "github.com/greymatter-io/lxdk/certificates"
 	"github.com/greymatter-io/lxdk/config"
@@ -81,7 +82,6 @@ func doCreate(ctx *cli.Context) error {
 	}
 
 	if state.StoragePool == "" {
-		state.StoragePoolManaged = true
 		state.StoragePool, err = createStoragePool(state, is)
 		if err != nil {
 			if err := deleteNetwork(state, is); err != nil {
@@ -117,7 +117,7 @@ func doCreate(ctx *cli.Context) error {
 		if err := deleteNetwork(state, is); err != nil {
 			log.Default().Printf("network %s was not deleted", state.NetworkID)
 		}
-		if state.StoragePoolManaged {
+		if strings.Contains(state.StoragePool, "lxdk") {
 			if err := deleteStoragePool(state, is); err != nil {
 				log.Default().Printf("storage pool %s was not deleted", state.StoragePool)
 			}

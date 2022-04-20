@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/greymatter-io/lxdk/config"
 	"github.com/greymatter-io/lxdk/containers"
@@ -55,10 +56,10 @@ func doDelete(ctx *cli.Context) error {
 		return err
 	}
 
-	if !state.StoragePoolManaged {
+	if !strings.Contains(state.StoragePool, "lxdk") {
 		log.Default().Printf("storage pool %s was not created by lxdk and will not be deleted", state.StoragePool)
 	}
-	if ctx.Bool("delete-storage") && state.StoragePoolManaged {
+	if ctx.Bool("delete-storage") && strings.Contains(state.StoragePool, "lxdk") {
 		err = deleteStoragePool(state, is)
 		if err != nil {
 			return err
