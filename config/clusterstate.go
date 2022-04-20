@@ -18,9 +18,8 @@ const (
 )
 
 type ClusterState struct {
-	Name           string `toml:"name"`
-	NetworkID      string `toml:"network_id"`
-	NetworkManaged bool   `toml:"network_managed"`
+	Name      string `toml:"name"`
+	NetworkID string `toml:"network_id"`
 
 	Containers []string `toml:"containers"`
 
@@ -31,9 +30,8 @@ type ClusterState struct {
 	RegistryContainerName   string   `toml:"registry_container_name"`
 	WorkerContainerNames    []string `toml:"worker_container_names"`
 
-	StorageDriver      string `toml:"storage_driver"`
-	StoragePool        string `toml:"storage_pool"`
-	StoragePoolManaged bool   `toml:"storage_pool_managed"`
+	StorageDriver string `toml:"storage_driver"`
+	StoragePool   string `toml:"storage_pool"`
 }
 
 func ClusterStateFromContext(ctx *cli.Context) (ClusterState, error) {

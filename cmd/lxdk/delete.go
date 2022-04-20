@@ -66,7 +66,7 @@ func doDelete(ctx *cli.Context) error {
 		}
 	}
 
-	if ctx.Bool("delete-network") && state.NetworkManaged {
+	if ctx.Bool("delete-network") && strings.Contains(state.NetworkID, "lxdk") {
 		err = deleteNetwork(state, is)
 		if err != nil {
 			return err
