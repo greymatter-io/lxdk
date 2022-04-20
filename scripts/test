@@ -2,4 +2,34 @@
 
 set -e -o pipefail
 
-go test -v ./...
+cmd_unittest () {
+    go test -v ./...
+}
+
+cmd_ci () {
+    TEST_FAST=true go test -v ./...
+}
+
+cmd_kubernetes () {
+    ./scripts/build
+    clustername="lxdk-$(echo $RANDOM | head -c 5)"
+    ./bin/lxdk create $clustername
+    ./bin/lxdk start $clustername
+}
+
+if [ $# -eq "0" ]; then
+    cmd_unittest
+    exit 0
+fi
+
+CMD=$1
+case $CMD in
+unittest|ci|kubernetes)
+  shift
+  cmd_$CMD
+  ;;
+*)
+  echo "invalid argument: $1"
+  exit 1
+  ;;
+esac
