@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/greymatter-io/lxdk/config"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -21,6 +22,16 @@ func runKubectlenv(ctx *cli.Context) error {
 		return errors.New("must supply cluster name")
 	}
 	clusterName := ctx.Args().First()
+
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = stateManager.Pull(clusterName)
+	if err != nil {
+		return err
+	}
 
 	kfgPath := path.Join(cacheDir, clusterName, "kubeconfigs", "client.kubeconfig")
 	fmt.Printf("export KUBECONFIG=%s", kfgPath)

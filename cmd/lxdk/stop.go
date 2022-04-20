@@ -18,7 +18,17 @@ var (
 )
 
 func doStop(ctx *cli.Context) error {
-	state, err := config.ClusterStateFromContext(ctx)
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	if ctx.Args().Len() == 0 {
+		return fmt.Errorf("must supply cluster name")
+	}
+	clusterName := ctx.Args().First()
+
+	state, err := stateManager.Pull(clusterName)
 	if err != nil {
 		return err
 	}
@@ -39,7 +49,12 @@ func doStop(ctx *cli.Context) error {
 	}
 
 	state.RunState = config.Stopped
-	if err := config.WriteClusterState(ctx, state); err != nil {
+	if err := stateManager.Cache(state); err != nil {
+		return err
+	}
+
+	err = stateManager.Push(state)
+	if err != nil {
 		return err
 	}
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/greymatter-io/lxdk/config"
 	"github.com/urfave/cli/v2"
 )
 
@@ -15,21 +15,19 @@ var listCmd = &cli.Command{
 }
 
 func doList(ctx *cli.Context) error {
-	cacheDir := ctx.String("cache")
-
-	dirEntries, err := os.ReadDir(cacheDir)
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	var clusters []string
-	for _, entry := range dirEntries {
-		if entry.IsDir() {
-			clusters = append(clusters, entry.Name())
-		}
+	clusters, err := stateManager.List()
+	if err != nil {
+		return err
 	}
 
-	fmt.Println(clusters)
+	for _, cluster := range clusters {
+		fmt.Println(cluster)
+	}
 
 	return nil
 }

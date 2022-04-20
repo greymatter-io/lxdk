@@ -13,8 +13,36 @@ cmd_ci () {
 cmd_kubernetes () {
     ./scripts/build
     clustername="lxdk-$(echo $RANDOM | head -c 5)"
-    ./bin/lxdk create $clustername
+    ./bin/lxdk create --network=lxdbr0 --create-storage-pool $clustername
     ./bin/lxdk start $clustername
+
+    kc="kubectl --kubeconfig ${HOME}/.cache/lxdk/${clustername}/kubeconfigs/client.kubeconfig"
+
+    for i in {0..10}; do
+        if ! $kc get node -o jsonpath='{.items[*].status.conditions[?(.reason=="KubeletReady")]}' > /dev/null 2>&1; then
+            echo "waiting for cluster to become ready"
+        else
+            break
+        fi
+
+        sleep 10
+    done
+
+    if ! $kc get node -o jsonpath='{.items[*].status.conditions[?(.reason=="KubeletReady")]}' > /dev/null 2>&1; then
+        echo "cluster is not ready after 100 seconds, deleting"
+        ./bin/lxdk delete $clustername
+    fi
+
+    echo "api server responsive"
+    echo "nodes ready"
+
+    if ! lxc ls $(lxc ls -f json | jq '.[].name | match("lxdk-critter-controller-.*") | .string' | tr -d '"') -f compact -c 4 | grep flannel > /dev/null 2>&1; then
+        echo "network is not ready - cluster has no flannel ip"
+    fi
+
+    echo "network ready - cluster is working, tearing down"
+
+    ./bin/lxdk delete $clustername
 }
 
 if [ $# -eq "0" ]; then

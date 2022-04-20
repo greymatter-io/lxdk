@@ -28,12 +28,23 @@ var (
 				Value: "btrfs",
 			},
 			&cli.StringFlag{
-				Name:  "storage-pool",
-				Usage: "lxd storage pool use, overrides storage pool creation",
+				Name:    "storage-pool",
+				Aliases: []string{"s"},
+				Usage:   "lxd storage pool use, overrides storage pool creation",
+			},
+			&cli.BoolFlag{
+				Name:  "create-storage-pool",
+				Usage: "have lxdk create a storage pool for the cluster",
+				Value: false,
 			},
 			&cli.StringFlag{
 				Name:  "network",
 				Usage: "network id of lxd network to use, overrides network creation",
+			},
+			&cli.BoolFlag{
+				Name:  "create-network",
+				Usage: "have lxdk create a network for the cluster",
+				Value: false,
 			},
 			&cli.IntFlag{
 				Name:  "num-workers",
@@ -58,6 +69,11 @@ func doCreate(ctx *cli.Context) error {
 		return err
 	}
 
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
 	cacheDir := ctx.String("cache")
 
 	if ctx.Args().Len() == 0 {
@@ -66,23 +82,35 @@ func doCreate(ctx *cli.Context) error {
 	clusterName := ctx.Args().First()
 	state.Name = clusterName
 
-	path := path.Join(cacheDir, clusterName)
-
-	_, err = os.Stat(path)
-	if err == nil {
-		return errors.Errorf("cluster %s already exists at path %s", clusterName, path)
+	if ctx.String("storage-pool") == "" && !ctx.Bool("create-storage-pool") {
+		return fmt.Errorf("must supply one of --storage-pool or --create-storage-pool true")
 	}
 
-	if state.NetworkID == "" {
+	if ctx.String("network") == "" && !ctx.Bool("create-network") {
+		return fmt.Errorf("must supply one of --network or --create-network")
+	}
+
+	clusters, err := stateManager.List()
+	if err != nil {
+		return err
+	}
+
+	for _, cluster := range clusters {
+		if clusterName == cluster {
+			return errors.Errorf("cluster %s already exists", clusterName)
+		}
+	}
+
+	if state.NetworkID == "" && ctx.Bool("create-network") {
 		networkID, err := createNetwork(state, is)
 		if err != nil {
 			return err
 		}
 		state.NetworkID = networkID
 	}
+	log.Default().Println("using network:", state.NetworkID)
 
-	if state.StoragePool == "" {
-		state.StoragePoolManaged = true
+	if state.StoragePool == "" && ctx.Bool("create-storage-pool") {
 		state.StoragePool, err = createStoragePool(state, is)
 		if err != nil {
 			if err := deleteNetwork(state, is); err != nil {
@@ -137,12 +165,18 @@ func doCreate(ctx *cli.Context) error {
 		}
 	}
 
-	err = config.WriteClusterState(ctx, state)
+	err = stateManager.Cache(state)
 	if err != nil {
 		return fmt.Errorf("error reading cluster config: %w", err)
 	}
 
-	err = createCerts(path)
+	cachePath := path.Join(cacheDir, clusterName)
+	err = createCerts(cachePath)
+	if err != nil {
+		return err
+	}
+
+	err = stateManager.Push(state)
 	if err != nil {
 		return err
 	}

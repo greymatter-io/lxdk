@@ -26,7 +26,12 @@ func doEtcdenv(ctx *cli.Context) error {
 	clusterName := ctx.Args().First()
 	certDir := path.Join(cacheDir, clusterName, "certificates")
 
-	state, err := config.ClusterStateFromContext(ctx)
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	state, err := stateManager.Pull(clusterName)
 	if err != nil {
 		return err
 	}

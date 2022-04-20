@@ -39,17 +39,23 @@ var (
 // TODO: split this up into individual commands, each with their own tests to
 // make sure each service is configured correctly
 func doStart(ctx *cli.Context) error {
-	cacheDir := ctx.String("cache")
-	if ctx.Args().Len() == 0 {
-		return fmt.Errorf("must supply cluster name")
-	}
-	clusterName := ctx.Args().First()
-	certDir := path.Join(cacheDir, clusterName, "certificates")
-
-	state, err := config.ClusterStateFromContext(ctx)
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
 	if err != nil {
 		return err
 	}
+
+	clusterName := ctx.Args().First()
+	if ctx.Args().Len() == 0 {
+		return fmt.Errorf("must supply cluster name")
+	}
+
+	state, err := stateManager.Pull(clusterName)
+	if err != nil {
+		return err
+	}
+
+	cacheDir := ctx.String("cache")
+	certDir := path.Join(cacheDir, clusterName, "certificates")
 
 	if state.RunState == config.Running {
 		return fmt.Errorf("cluster %s is already running or was not stopped by lxdk", clusterName)
@@ -355,7 +361,12 @@ func doStart(ctx *cli.Context) error {
 	}
 
 	state.RunState = config.Running
-	if err := config.WriteClusterState(ctx, state); err != nil {
+	if err := stateManager.Cache(state); err != nil {
+		return err
+	}
+
+	err = stateManager.Push(state)
+	if err != nil {
 		return err
 	}
 

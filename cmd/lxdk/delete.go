@@ -41,7 +41,12 @@ func doDelete(ctx *cli.Context) error {
 	}
 	path := path.Join(cacheDir, clusterName)
 
-	state, err := config.ClusterStateFromContext(ctx)
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	state, err := stateManager.Pull(clusterName)
 	if err != nil {
 		return err
 	}

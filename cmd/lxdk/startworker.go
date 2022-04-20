@@ -24,7 +24,13 @@ func doStartWorker(ctx *cli.Context) error {
 
 	clusterName := ctx.Args().First()
 	certDir := path.Join(cacheDir, clusterName, "certificates")
-	state, err := config.ClusterStateFromContext(ctx)
+
+	stateManager, err := config.ClusterStateManagerFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	state, err := stateManager.Pull(clusterName)
 	if err != nil {
 		return err
 	}
@@ -88,7 +94,13 @@ func doStartWorker(ctx *cli.Context) error {
 
 	state.Containers = append(state.Containers, containerName)
 	state.WorkerContainerNames = append(state.WorkerContainerNames, containerName)
-	if err := config.WriteClusterState(ctx, state); err != nil {
+
+	if err := stateManager.Cache(state); err != nil {
+		return err
+	}
+
+	err = stateManager.Push(state)
+	if err != nil {
 		return err
 	}
 

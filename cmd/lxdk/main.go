@@ -29,6 +29,22 @@ var app = &cli.App{
 			EnvVars: []string{"LXDK_CACHE"},
 		},
 		&cli.StringFlag{
+			Name:    "cluster-state-manager",
+			Usage:   "Cluster state manager to use [local, git]",
+			Value:   "local",
+			EnvVars: []string{"LXDK_CLUSTER_STATE_MANAGER"},
+		},
+		&cli.StringFlag{
+			Name:    "git-url",
+			Usage:   "(git) The git url to use if --cluster-state-manager=git",
+			EnvVars: []string{"LXDK_GIT_URL"},
+		},
+		&cli.StringFlag{
+			Name:    "git-keypath",
+			Usage:   "(git) The path to the ssh key to use, password must be set in LXDK_SSH_PASSWORD",
+			EnvVars: []string{"LXDK_GIT_KEYPATH"},
+		},
+		&cli.StringFlag{
 			Name:    "lxdconfig",
 			Usage:   "Path to lxd config file",
 			Value:   fmt.Sprintf("%s/.config/lxc/config.yml", os.Getenv("HOME")),
