@@ -140,10 +140,6 @@ func (mngr GitStateManager) sshAuthMethod() (gitssh.AuthMethod, error) {
 		return nil, fmt.Errorf("must set --git-keypath")
 	}
 
-	if os.Getenv("LXDK_SSH_PASSWORD") == "" {
-		return nil, fmt.Errorf("LXDK_SSH_PASSWORD is not set")
-	}
-
 	sshKey, err := ioutil.ReadFile(mngr.KeyPath)
 	if err != nil {
 		return nil, err
@@ -151,7 +147,7 @@ func (mngr GitStateManager) sshAuthMethod() (gitssh.AuthMethod, error) {
 
 	publicKey, err := gitssh.NewPublicKeys("git", sshKey, os.Getenv("LXDK_SSH_PASSWORD"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w - did you set LXDK_SSH_PASSWORD?", err)
 	}
 
 	publicKey.HostKeyCallbackHelper = gitssh.HostKeyCallbackHelper{
