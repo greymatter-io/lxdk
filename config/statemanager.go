@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
+	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	gitssh "github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/go-git/go-git/v5/storage/memory"
@@ -57,7 +59,9 @@ func ClusterStateManagerFromContext(ctx *cli.Context) (ClusterStateManager, erro
 		cacheDir := ctx.String("cache")
 		url := ctx.String("git-url")
 		keyPath := ctx.String("git-keypath")
-		return GitStateManager{Dir: cacheDir, URL: url, KeyPath: keyPath}, nil
+		gsm := GitStateManager{URL: url, KeyPath: keyPath}
+		gsm.Dir = cacheDir
+		return gsm, nil
 	}
 
 	return nil, nil
@@ -125,25 +129,42 @@ func (mngr LocalStateManager) Push(state ClusterState) error {
 // GitStateManager pulls its cluster states from a git repository. It expects
 // all clusters to be in their own folder at the root level of the repository.
 type GitStateManager struct {
-	Dir string
-	URL string
+	LocalStateManager
 
+	URL     string
 	KeyPath string
 }
 
-func (mngr GitStateManager) cloneToMemory() (*git.Repository, billy.Filesystem, error) {
+func (mngr GitStateManager) sshAuthMethod() (gitssh.AuthMethod, error) {
+	if mngr.KeyPath == "" {
+		return nil, fmt.Errorf("must set --git-keypath")
+	}
+
+	if os.Getenv("LXDK_SSH_PASSWORD") == "" {
+		return nil, fmt.Errorf("LXDK_SSH_PASSWORD is not set")
+	}
+
 	sshKey, err := ioutil.ReadFile(mngr.KeyPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	publicKey, err := gitssh.NewPublicKeys("git", sshKey, os.Getenv("LXDK_SSH_PASSWORD"))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	publicKey.HostKeyCallbackHelper = gitssh.HostKeyCallbackHelper{
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	return publicKey, nil
+}
+
+func (mngr GitStateManager) cloneToMemory() (*git.Repository, billy.Filesystem, error) {
+	publicKey, err := mngr.sshAuthMethod()
+	if err != nil {
+		return nil, nil, err
 	}
 
 	fs := memfs.New()
@@ -173,30 +194,79 @@ func (mngr GitStateManager) List() ([]string, error) {
 	return nil, nil
 }
 
-func (mngr GitStateManager) Cache(state ClusterState) error {
-	return nil
-}
-
 func (mngr GitStateManager) Pull(cluster string) (ClusterState, error) {
 	_, fs, err := mngr.cloneToMemory()
 	if err != nil {
 		return ClusterState{}, err
 	}
 
-	err = copyDir(fs, cluster, path.Join(mngr.Dir, cluster))
+	local_fs := osfs.New(mngr.Dir)
+	err = copyDir(fs, local_fs, cluster, cluster)
 	if err != nil {
 		return ClusterState{}, err
 	}
 
-	return ClusterState{}, nil
+	stateBytes, err := ioutil.ReadFile(path.Join(mngr.Dir, cluster, "state.toml"))
+	if err != nil {
+		return ClusterState{}, err
+	}
+
+	var state ClusterState
+
+	_, err = toml.Decode(string(stateBytes), &state)
+	if err != nil {
+		return ClusterState{}, err
+	}
+
+	return state, nil
 }
 
 func (mngr GitStateManager) Push(state ClusterState) error {
+	rep, rep_fs, err := mngr.cloneToMemory()
+	if err != nil {
+		return err
+	}
+
+	local_fs := osfs.New(mngr.Dir)
+	err = copyDir(local_fs, rep_fs, state.Name, state.Name)
+	if err != nil {
+		return err
+	}
+
+	wt, err := rep.Worktree()
+	if err != nil {
+		return err
+	}
+
+	wt.Add(state.Name)
+
+	commitOpts := git.CommitOptions{
+		All: true,
+	}
+	_, err = wt.Commit("lxdk-"+time.Now().String(), &commitOpts)
+	if err != nil {
+		return err
+	}
+
+	publicKey, err := mngr.sshAuthMethod()
+	if err != nil {
+		return err
+	}
+
+	pushOpts := git.PushOptions{
+		Auth: publicKey,
+	}
+
+	err = rep.Push(&pushOpts)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func copyDir(fs billy.Filesystem, src string, dest string) error {
-	finfos, err := fs.ReadDir(src)
+func copyDir(fs_src, fs_dest billy.Filesystem, src string, dest string) error {
+	finfos, err := fs_src.ReadDir(src)
 	if err != nil {
 		return err
 	}
@@ -207,14 +277,13 @@ func copyDir(fs billy.Filesystem, src string, dest string) error {
 	}
 
 	for _, f := range finfos {
-		fmt.Println(f.Name())
 		if f.IsDir() {
-			err = copyDir(fs, path.Join(src, f.Name()), path.Join(dest, f.Name()))
+			err = copyDir(fs_src, fs_dest, path.Join(src, f.Name()), path.Join(dest, f.Name()))
 			if err != nil {
 				return err
 			}
 		} else {
-			file, err := fs.Open(path.Join(src, f.Name()))
+			file, err := fs_src.Open(path.Join(src, f.Name()))
 			if err != nil {
 				return err
 			}
@@ -225,7 +294,12 @@ func copyDir(fs billy.Filesystem, src string, dest string) error {
 				return err
 			}
 
-			err = ioutil.WriteFile(path.Join(dest, f.Name()), buffer.Bytes(), 777)
+			fs_dest.Remove(path.Join(dest, f.Name()))
+			destfile, err := fs_dest.Create(path.Join(dest, f.Name()))
+			if err != nil {
+			}
+
+			_, err = destfile.Write(buffer.Bytes())
 			if err != nil {
 				return err
 			}
