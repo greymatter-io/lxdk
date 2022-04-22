@@ -8,9 +8,10 @@ import (
 )
 
 var listCmd = &cli.Command{
-	Name:   "list",
-	Usage:  "list clusters",
-	Action: doList,
+	Name:    "list",
+	Usage:   "list clusters",
+	Aliases: []string{"ls"},
+	Action:  doList,
 }
 
 func doList(ctx *cli.Context) error {

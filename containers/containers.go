@@ -188,11 +188,11 @@ func DeleteContainer(containerName string, is lxd.InstanceServer) error {
 func WaitContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
 	var ip net.IP
 	var err error
-	ip, err = GetContainerIP(name, is)
+	ip, err = GetContainerLXDIP(name, is)
 	for c := 0; c < 50 && err != nil; c++ {
 		log.Default().Printf("waiting for %s to get an IP address...", name)
 		time.Sleep(2 * time.Second)
-		ip, err = GetContainerIP(name, is)
+		ip, err = GetContainerLXDIP(name, is)
 	}
 	if err != nil {
 		return nil, err
@@ -200,15 +200,16 @@ func WaitContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
 	return ip, nil
 }
 
-func GetContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
-	// TODO: loop with timeout
+// GetContainerLXDIP returns the IP address of the container on the LXD network
+// (and not the cni0 flannel.1 network devices). This is usually on eth0.
+func GetContainerLXDIP(name string, is lxd.InstanceServer) (net.IP, error) {
 	in, _, err := is.GetInstanceFull(name)
 	if err != nil {
 		return nil, fmt.Errorf("error getting instance: %w", err)
 	}
 
 	var ips []string
-	for _, net := range in.State.Network {
+	for netName, net := range in.State.Network {
 		if net.Type == "loopback" {
 			continue
 		}
@@ -218,7 +219,7 @@ func GetContainerIP(name string, is lxd.InstanceServer) (net.IP, error) {
 				continue
 			}
 
-			if strings.Contains(addr.Family, "inet") {
+			if strings.Contains(addr.Family, "inet") && netName != "cni0" && netName != "flannel.1" {
 				ips = append(ips, addr.Address)
 			}
 		}
