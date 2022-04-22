@@ -117,13 +117,13 @@ func TestCertificatesCreated(t *testing.T) {
 	var workerName string
 	for _, container := range state.Containers {
 		if strings.Contains(container, "etcd") {
-			etcdIP, err = containers.WaitContainerIP(container, is)
+			etcdIP, err = containers.WaitContainerIP(container, nil, is)
 		}
 		if strings.Contains(container, "controller") {
-			controllerIP, err = containers.WaitContainerIP(container, is)
+			controllerIP, err = containers.WaitContainerIP(container, nil, is)
 		}
 		if strings.Contains(container, "worker") {
-			workerIP, err = containers.WaitContainerIP(container, is)
+			workerIP, err = containers.WaitContainerIP(container, nil, is)
 			workerName = container
 		}
 		if err != nil {

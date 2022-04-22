@@ -33,7 +33,7 @@ func doStartWorker(ctx *cli.Context) error {
 		return fmt.Errorf("cluster %s is not running or was not started by lxdk", state.Name)
 	}
 
-	is, _, err := lxd.InstanceServerConnect()
+	is, hostname, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
 	}
@@ -54,21 +54,21 @@ func doStartWorker(ctx *cli.Context) error {
 		return err
 	}
 
-	if err = createWorkerCert(containerName, certDir, is); err != nil {
+	if err = createWorkerCert(containerName, certDir, hostname, is); err != nil {
 		return err
 	}
 
-	registryIP, err := containers.WaitContainerIP(state.RegistryContainerName, is)
+	registryIP, err := containers.WaitContainerIP(state.RegistryContainerName, []string{hostname}, is)
 	if err != nil {
 		return err
 	}
 
-	controllerIP, err := containers.WaitContainerIP(state.ControllerContainerName, is)
+	controllerIP, err := containers.WaitContainerIP(state.ControllerContainerName, []string{hostname}, is)
 	if err != nil {
 		return err
 	}
 
-	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, is)
+	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, []string{hostname}, is)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,7 @@ import "github.com/urfave/cli/v2"
 var upCmd = &cli.Command{
 	Name:   "up",
 	Usage:  "create + start in one command",
-	Flags:  createCmd.Flags,
+	Flags:  append(createCmd.Flags, startCmd.Flags...),
 	Action: doUp,
 }
 

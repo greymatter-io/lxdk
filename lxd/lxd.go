@@ -51,7 +51,7 @@ func InstanceServerConnect() (lxd.InstanceServer, string, error) {
 	log.Default().Printf("using remote: %s", conf.DefaultRemote)
 	is, err = conf.GetInstanceServer(conf.DefaultRemote)
 	if err != nil {
-		return nil, "", fmt.Errorf("error getting instanse server from config: %w", err)
+		return nil, "", fmt.Errorf("error getting instance server from config: %w", err)
 	}
 
 	uri, err := url.Parse(conf.Remotes[conf.DefaultRemote].Addr)

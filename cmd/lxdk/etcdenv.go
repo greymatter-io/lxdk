@@ -33,12 +33,12 @@ func doEtcdenv(ctx *cli.Context) error {
 
 	log.Default().SetOutput(ioutil.Discard)
 
-	is, _, err := lxd.InstanceServerConnect()
+	is, hostname, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
 	}
 
-	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, is)
+	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, []string{hostname}, is)
 	if err != nil {
 		return err
 	}
