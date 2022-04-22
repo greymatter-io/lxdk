@@ -49,6 +49,17 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
+	for _, containerName := range state.Containers {
+		state, _, err := is.GetInstanceState(containerName)
+		if err != nil {
+			return err
+		}
+
+		if state.Status == "Running" {
+			return fmt.Errorf("container %s is already running", containerName)
+		}
+	}
+
 	for _, container := range state.Containers {
 		log.Default().Println("starting " + container)
 		err = containers.StartContainer(container, is)
@@ -273,9 +284,6 @@ func doStart(ctx *cli.Context) error {
 		}
 	}
 
-	// lxc config device add lxdk-gm-controller-5kxsu k8s6443 proxy listen=tcp:0.0.0.0:6443 connect=tcp:127.0.0.1:6443
-	// lxc config device add lxdk-gm-controller-4tpcl nvme1n1 unix-block source=/dev/nvme1n1 path=/dev/nvme1n1
-
 	op, err := is.UpdateInstance(state.ControllerContainerName, newDevices, "")
 	if err != nil {
 		return err
@@ -371,6 +379,11 @@ func doStart(ctx *cli.Context) error {
 		fmt.Sprintf(`kubectl --kubeconfig=%s taint node %s node-role.kubernetes.io/master=:NoSchedule`, kfg, state.ControllerContainerName),
 	}, is)
 	if err != nil {
+		return err
+	}
+
+	state.RunState = config.Running
+	if err := config.WriteClusterState(ctx, state); err != nil {
 		return err
 	}
 
