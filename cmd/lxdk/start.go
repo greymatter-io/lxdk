@@ -53,6 +53,17 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
+	for _, containerName := range state.Containers {
+		state, _, err := is.GetInstanceState(containerName)
+		if err != nil {
+			return err
+		}
+
+		if state.Status == "Running" {
+			return fmt.Errorf("container %s is already running", containerName)
+		}
+	}
+
 	for _, container := range state.Containers {
 		log.Default().Println("starting " + container)
 		err = containers.StartContainer(container, is)
