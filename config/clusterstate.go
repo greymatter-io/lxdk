@@ -25,6 +25,8 @@ type ClusterState struct {
 
 	RunState RunState `toml:"run_state"`
 
+	RegistryEnabled bool `toml:"registry_enabled"`
+
 	EtcdContainerName       string   `toml:"etcd_container_name"`
 	ControllerContainerName string   `toml:"controller_container_name"`
 	RegistryContainerName   string   `toml:"registry_container_name"`

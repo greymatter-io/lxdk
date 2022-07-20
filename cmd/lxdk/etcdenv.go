@@ -44,12 +44,12 @@ func doEtcdenv(ctx *cli.Context) error {
 	}
 
 	cert := func(name string) string { return path.Join(certDir, name+".pem") }
-	fmt.Println("ETCDCTL_CACERT=" + cert("ca"))
-	fmt.Println("ETCDCTL_CERT=" + cert("etcd"))
-	fmt.Println("ETCDCTL_KEY=" + cert("etcd-key"))
-	fmt.Println("ETCD_INSECURE_TRANSPORT=false")
-	fmt.Println("ETCD_ENDPOINTS=" + etcdIP.String())
-	fmt.Println("ETCD_API=3")
+	fmt.Println("export ETCDCTL_CACERT=" + cert("ca-etcd"))
+	fmt.Println("export ETCDCTL_CERT=" + cert("etcd"))
+	fmt.Println("export ETCDCTL_KEY=" + cert("etcd-key"))
+	fmt.Println("export ETCDCTL_INSECURE_TRANSPORT=false")
+	fmt.Println("export ETCDCTL_ENDPOINTS=" + etcdIP.String() + ":2379")
+	fmt.Println("export ETCDCTL_API=3")
 
 	return nil
 }

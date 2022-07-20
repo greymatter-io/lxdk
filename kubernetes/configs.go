@@ -16,7 +16,7 @@ location = "%s:5000"
 [[registry]]
 prefix = "%s:-127.0.0.1}:5000"
 insecure = true
-location = "%s:-127.0.0.1}:5000"`, registryName, registryName, registryName, registryIP, registryIP))
+location = "%s:-127.0.0.1}:5000"`, registryIP, registryName, registryIP, registryIP, registryIP))
 }
 
 // this one could be removed by not putting the unique container ID for the
