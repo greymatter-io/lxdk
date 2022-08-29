@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/greymatter-io/lxdk/version"
-	"github.com/urfave/cli/v2" // imports as package "cli"
+	"github.com/urfave/cli/v2"
 )
 
 var app = &cli.App{
 	Name:    "lxdk",
-	Usage:   "Fast multi-node Kubernetes on lxd",
+	Usage:   "Fast multi-node Kubernetes on LXD",
 	Version: version.Version(),
 	Flags: []cli.Flag{
 		&cli.StringFlag{
@@ -21,18 +21,21 @@ var app = &cli.App{
 			TakesFile: true,
 			Value:     fmt.Sprintf("%s/.config/lxdk/config.toml", os.Getenv("HOME")),
 			EnvVars:   []string{"LXDK_CONFIG"},
+			DefaultText: "~/.config/lxdk/config.toml",
 		},
 		&cli.StringFlag{
 			Name:    "cache",
 			Usage:   "Path to cache directory",
 			Value:   fmt.Sprintf("%s/.cache/lxdk", os.Getenv("HOME")),
 			EnvVars: []string{"LXDK_CACHE"},
+			DefaultText: "~/.cache/lxdk",
 		},
 		&cli.StringFlag{
 			Name:    "lxdconfig",
-			Usage:   "Path to lxd config file",
+			Usage:   "Path to LXD config file",
 			Value:   fmt.Sprintf("%s/.config/lxc/config.yml", os.Getenv("HOME")),
 			EnvVars: []string{"LXDK_LXD_CONFIG"},
+			DefaultText: "~/.config/lxc/config.yml",
 		},
 	},
 	Commands: []*cli.Command{
