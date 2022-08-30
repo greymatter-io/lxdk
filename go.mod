@@ -6,6 +6,7 @@ go 1.16
 
 require (
 	github.com/BurntSushi/toml v0.4.1
+	github.com/hashicorp/go-getter/v2 v2.1.0
 	github.com/lxc/lxd v0.0.0-20220323040909-6ecd7aa631e8
 	github.com/pkg/errors v0.9.1
 	github.com/urfave/cli/v2 v2.3.0

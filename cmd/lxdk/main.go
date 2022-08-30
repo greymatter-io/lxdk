@@ -49,6 +49,7 @@ var app = &cli.App{
 		createCmd,
 		debugCertCmd,
 		stopCmd,
+		downloadCmd,
 	},
 	CommandNotFound: func(c *cli.Context, cmd string) {
 		fmt.Fprintf(c.App.Writer, `command not found: %s, run "lxdk --help" for help`, cmd)
