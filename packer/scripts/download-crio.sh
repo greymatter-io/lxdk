@@ -6,7 +6,7 @@ set -eu
 
 apt-get install wget runc
 
-wget "https://storage.googleapis.com/cri-o/artifacts/cri-o.amd64.c0b2474b80fd0844b883729bda88961bed7b472b.tar.gz"
+wget -q "https://storage.googleapis.com/cri-o/artifacts/cri-o.amd64.c0b2474b80fd0844b883729bda88961bed7b472b.tar.gz"
 tar -xvf "cri-o.amd64.c0b2474b80fd0844b883729bda88961bed7b472b.tar.gz"
 
 bin_dir="cri-o/bin"
