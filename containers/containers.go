@@ -30,6 +30,8 @@ type ContainerConfig struct {
 	NetworkID   string
 }
 
+// CreateContainerProfile sets up a container profile suitable for running Kubernetes
+// workloads.
 func CreateContainerProfile(is lxdclient.InstanceServer) error {
 	prof, _, err := is.GetProfile("default")
 	if err != nil {

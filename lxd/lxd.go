@@ -10,35 +10,25 @@ import (
 	"strings"
 
 	lxd "github.com/lxc/lxd/client"
-	"github.com/lxc/lxd/lxc/config"
+	lxdconfig "github.com/lxc/lxd/lxc/config"
 	"github.com/pkg/errors"
 )
 
 const snapSocketPath = "/var/snap/lxd/common/lxd/unix.socket"
 
+// locateLXDConfig searches common paths for our LXD conf
+
+// InstanceServerConnect ...
 func InstanceServerConnect() (lxd.InstanceServer, string, error) {
+
 	var is lxd.InstanceServer
-	confDir := path.Join(os.Getenv("HOME"), ".config", "lxc")
+
+	conf, err := LoadLXDConfig()
+	if err != nil {
+		return nil, "", fmt.Errorf("error loading LXD config: %w", err)
+	}
 
 	isSnap, err := IsSnap()
-	if err != nil {
-		return nil, "", err
-	}
-	if isSnap {
-		confDir = path.Join(os.Getenv("HOME"), "snap", "lxd", "common", "config")
-	}
-
-	lxdConf := os.Getenv("LXD_CONF")
-	if !(lxdConf == "") {
-		confDir = lxdConf
-	}
-
-	confFile := path.Join(confDir, "config.yml")
-
-	conf, err := config.LoadConfig(confFile)
-	if err != nil {
-		return is, "", err
-	}
 
 	if isSnap && conf.DefaultRemote == "local" {
 		is, err = lxd.ConnectLXDUnix(snapSocketPath, nil)
@@ -62,10 +52,31 @@ func InstanceServerConnect() (lxd.InstanceServer, string, error) {
 	return is, uri.Hostname(), nil
 }
 
+// LoadLXDConfig ...
+func LoadLXDConfig() (*lxdconfig.Config, error) {
+	confDir := path.Join(os.Getenv("HOME"), ".config", "lxc")
+
+	isSnap, err := IsSnap()
+	if err != nil {
+		return nil, err
+	}
+	if isSnap {
+		confDir = path.Join(os.Getenv("HOME"), "snap", "lxd", "common", "config")
+	}
+
+	if lxdConf := os.Getenv("LXD_CONF"); lxdConf != "" {
+		confDir = lxdConf
+	}
+
+	confFile := path.Join(confDir, "config.yml")
+	return lxdconfig.LoadConfig(confFile)
+}
+
 // IsSnap returns true if lxd was installed using snap, and false otherwise.
 // This is necessary because the snap install puts its config file in a
 // different location on disk.
 func IsSnap() (bool, error) {
+	// TODO(cm) this should be an initialization step
 	lxcPath, err := exec.LookPath("lxc")
 	if err != nil {
 		return false, fmt.Errorf("could not find lxc in PATH: %w", err)

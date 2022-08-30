@@ -46,6 +46,8 @@ var (
 )
 
 func doCreate(ctx *cli.Context) error {
+
+	// init our self-managed state
 	var state config.ClusterState
 	state.StorageDriver = ctx.String("storage-driver")
 	state.StoragePool = ctx.String("storage-pool")
@@ -53,6 +55,7 @@ func doCreate(ctx *cli.Context) error {
 
 	state.RunState = config.Uninitialized
 
+	// connect to LXD
 	is, _, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
@@ -66,11 +69,12 @@ func doCreate(ctx *cli.Context) error {
 	clusterName := ctx.Args().First()
 	state.Name = clusterName
 
-	path := path.Join(cacheDir, clusterName)
+	cachePath := path.Join(cacheDir, clusterName)
 
-	_, err = os.Stat(path)
+	// if the folder exists, we consider the cluster "created"
+	_, err = os.Stat(cachePath)
 	if err == nil {
-		return errors.Errorf("cluster %s already exists at path %s", clusterName, path)
+		return errors.Errorf("cluster %s already exists at path %s", clusterName, cachePath)
 	}
 
 	if state.NetworkID == "" {
@@ -84,6 +88,7 @@ func doCreate(ctx *cli.Context) error {
 	if state.StoragePool == "" {
 		state.StoragePool, err = createStoragePool(state, is)
 		if err != nil {
+			// delete network if create storage pool fails?
 			if err := deleteNetwork(state, is); err != nil {
 				log.Default().Printf("network %s was not deleted", state.NetworkID)
 			}
@@ -93,38 +98,16 @@ func doCreate(ctx *cli.Context) error {
 	}
 	log.Default().Println("using storage pool:", state.StoragePool)
 
-	profs, err := is.GetProfileNames()
-	if err != nil {
+	if err := ensureLXDKProfileExists(is); err != nil {
 		return err
-	}
-
-	profExists := false
-	for _, prof := range profs {
-		if prof == "lxdk" {
-			profExists = true
-			break
-		}
-	}
-
-	if !profExists {
-		if err = containers.CreateContainerProfile(is); err != nil {
-			return err
-		}
 	}
 
 	containerNames, err := createContainers(state, ctx.Int("num-workers"), is)
 	if err != nil {
-		if err := deleteNetwork(state, is); err != nil {
-			log.Default().Printf("network %s was not deleted", state.NetworkID)
-		}
-		if strings.Contains(state.StoragePool, "lxdk") {
-			if err := deleteStoragePool(state, is); err != nil {
-				log.Default().Printf("storage pool %s was not deleted", state.StoragePool)
-			}
-		}
-
+		cleanupStateOnErr(is, state)
 		return err
 	}
+
 	state.EtcdContainerName = containerNames["etcd"][0]
 	state.ControllerContainerName = containerNames["controller"][0]
 	state.RegistryContainerName = containerNames["registry"][0]
@@ -141,12 +124,41 @@ func doCreate(ctx *cli.Context) error {
 		return fmt.Errorf("error reading cluster config: %w", err)
 	}
 
-	err = createCerts(path)
+	err = createCerts(cachePath)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// delete our dedicated network and storage pool
+func cleanupStateOnErr(is lxdclient.InstanceServer, state config.ClusterState) {
+	if err := deleteNetwork(state, is); err != nil {
+		log.Default().Printf("network %s was not deleted", state.NetworkID)
+	}
+	// avoid deleting "default" storage pool
+	if strings.Contains(state.StoragePool, "lxdk") {
+		if err := deleteStoragePool(state, is); err != nil {
+			log.Default().Printf("storage pool %s was not deleted", state.StoragePool)
+		}
+	}
+}
+
+func ensureLXDKProfileExists(is lxdclient.InstanceServer) error {
+	profs, err := is.GetProfileNames()
+	if err != nil {
+		return err
+	}
+
+	for _, prof := range profs {
+		if prof == "lxdk" {
+			// Profile exists. Return.
+			return nil
+		}
+	}
+	// We didn't find the lxdk profile. Create it.
+	return containers.CreateContainerProfile(is)
 }
 
 func createNetwork(state config.ClusterState, is lxdclient.InstanceServer) (string, error) {

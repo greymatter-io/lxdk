@@ -23,7 +23,7 @@ func doStop(ctx *cli.Context) error {
 		return err
 	}
 
-  // TODO(cm): do we actually check with the real api?
+	// TODO(cm): do we actually check with the real api?
 	if state.RunState == config.Stopped {
 		return fmt.Errorf("cluster %s is already stopped or was not started by lxdk", state.Name)
 	}
