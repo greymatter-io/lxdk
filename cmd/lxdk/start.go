@@ -51,24 +51,9 @@ func doStart(ctx *cli.Context) error {
 		return err
 	}
 
-	if state.RunState == config.Running {
-		return fmt.Errorf("cluster %s is already running or was not stopped by lxdk", clusterName)
-	}
-
 	is, hostname, err := lxd.InstanceServerConnect()
 	if err != nil {
 		return err
-	}
-
-	for _, containerName := range state.Containers {
-		state, _, err := is.GetInstanceState(containerName)
-		if err != nil {
-			return err
-		}
-
-		if state.Status == "Running" {
-			return fmt.Errorf("container %s is already running", containerName)
-		}
 	}
 
 	for _, container := range state.Containers {
@@ -239,33 +224,34 @@ func doStart(ctx *cli.Context) error {
 	var newDevices api.InstancePut
 	newDevices = in.InstancePut
 
+	// TODO(cm) what's this for?
 	// if not using our own storage pool, mount the storage device the pool
 	// is on, otherwise kubelet can't mount it to get the cni config
-	if state.StoragePool != "lxdk-"+state.Name {
-		pool, _, err := is.GetStoragePool(state.StoragePool)
-		if err != nil {
-			return err
-		}
-		if pool.Driver == "btrfs" {
-			if source, ok := pool.Config["source"]; ok {
-				// Get the actual mount path for a device if it
-				// is configured with a UUID. A slash at the
-				// beginning is our heuristic for determining if
-				// an lxc source is a path or UUID.
-				if !strings.HasPrefix(source, "/") {
-					source, err = lxd.GetDeviceByUUID(source)
-					if err != nil {
-						return err
-					}
-				}
-				newDevices.Devices["btrfsmnt"] = map[string]string{
-					"type":   "unix-block",
-					"source": source,
-					"path":   source,
-				}
-			}
-		}
-	}
+	//if state.StoragePool != "lxdk-"+state.Name {
+	//	pool, _, err := is.GetStoragePool(state.StoragePool)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	if pool.Driver == "btrfs" {
+	//		if source, ok := pool.Config["source"]; ok {
+	//			// Get the actual mount path for a device if it
+	//			// is configured with a UUID. A slash at the
+	//			// beginning is our heuristic for determining if
+	//			// an lxc source is a path or UUID.
+	//			if !strings.HasPrefix(source, "/") {
+	//				source, err = lxd.GetDeviceByUUID(source)
+	//				if err != nil {
+	//					return err
+	//				}
+	//			}
+	//			newDevices.Devices["btrfsmnt"] = map[string]string{
+	//				"type":   "unix-block",
+	//				"source": source,
+	//				"path":   source,
+	//			}
+	//		}
+	//	}
+	//}
 
 	op, err := is.UpdateInstance(state.ControllerContainerName, newDevices, "")
 	if err != nil {
