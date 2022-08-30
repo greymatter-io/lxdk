@@ -16,6 +16,11 @@ type Config struct {
 	EnableInsecureRegistry bool   `toml:"enable_insecure_registry"`
 }
 
+type VersionedBinary struct {
+	Checksum string
+	URL      string
+}
+
 func CLIConfigFromCLIContext(context *cli.Context) (Config, error) {
 	var conf Config
 	_, err := toml.DecodeFile(context.String("config"), &conf)
