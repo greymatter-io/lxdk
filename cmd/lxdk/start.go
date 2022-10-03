@@ -226,7 +226,7 @@ func doStart(ctx *cli.Context) error {
 		"systemctl start kube-controller-manager",
 		"systemctl -q enable kube-scheduler",
 		"systemctl start kube-scheduler",
-		//"ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf",
+		"ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf",
 	}, is)
 	if err != nil {
 		return err
@@ -608,17 +608,16 @@ func configureWorker(wc workerConfig, is lxdclient.InstanceServer) error {
 		"mkdir -p /etc/cni/net.d",
 		"mkdir -p /etc/kubernetes/config",
 		"ln -s /dev/console /dev/kmsg",
+		"ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf",
 	}, is)
 	if err != nil {
 		return err
 	}
 
-	if wc.RegistryName != "" {
-		registryConf := kubernetes.WorkerRegistriesConfig(wc.RegistryName, wc.RegistryIP)
-		err = containers.UploadFile(registryConf, "", "/etc/containers/registries.conf", wc.ContainerName, is)
-		if err != nil {
-			return nil
-		}
+	registryConf := kubernetes.WorkerRegistriesConfig(wc.RegistryName, wc.RegistryIP)
+	err = containers.UploadFile(registryConf, "", "/etc/containers/registries.conf", wc.ContainerName, is)
+	if err != nil {
+		return nil
 	}
 
 	kubeletConf := kubernetes.KubeletConfig(lowerName)
