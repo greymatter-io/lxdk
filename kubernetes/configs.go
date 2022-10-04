@@ -4,6 +4,9 @@ import "fmt"
 
 // TODO: templating engine text/template
 func WorkerRegistriesConfig(registryName, registryIP string) []byte {
+	if registryName == "" {
+		return []byte(`unqualified-search-registries = ['docker.io']`)
+	}
 	return []byte(fmt.Sprintf(`unqualified-search-registries = ['docker.io']
 [[registry]]
 prefix = "registry.local:5000"
@@ -16,7 +19,7 @@ location = "%s:5000"
 [[registry]]
 prefix = "%s:-127.0.0.1}:5000"
 insecure = true
-location = "%s:-127.0.0.1}:5000"`, registryName, registryName, registryName, registryIP, registryIP))
+location = "%s:-127.0.0.1}:5000"`, registryIP, registryName, registryIP, registryIP, registryIP))
 }
 
 // this one could be removed by not putting the unique container ID for the

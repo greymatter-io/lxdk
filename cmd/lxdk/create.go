@@ -35,6 +35,11 @@ var (
 				Name:  "network",
 				Usage: "network id of lxd network to use, overrides network creation",
 			},
+			&cli.BoolFlag{
+				Name:  "insecure-registry",
+				Usage: "create an insecure image registry in the cluster",
+				Value: false,
+			},
 			&cli.IntFlag{
 				Name:  "num-workers",
 				Usage: "the number of worker nodes to create",
@@ -50,6 +55,7 @@ func doCreate(ctx *cli.Context) error {
 	state.StorageDriver = ctx.String("storage-driver")
 	state.StoragePool = ctx.String("storage-pool")
 	state.NetworkID = ctx.String("network")
+	state.RegistryEnabled = ctx.Bool("insecure-registry")
 
 	state.RunState = config.Uninitialized
 
@@ -127,8 +133,11 @@ func doCreate(ctx *cli.Context) error {
 	}
 	state.EtcdContainerName = containerNames["etcd"][0]
 	state.ControllerContainerName = containerNames["controller"][0]
-	state.RegistryContainerName = containerNames["registry"][0]
 	state.WorkerContainerNames = containerNames["worker"]
+
+	if state.RegistryEnabled {
+		state.RegistryContainerName = containerNames["registry"][0]
+	}
 
 	for _, names := range containerNames {
 		for _, name := range names {
@@ -293,6 +302,9 @@ func createContainers(state config.ClusterState, numWorkers int, is lxdclient.In
 	created := make(map[string][]string)
 	created["worker"] = []string{}
 	for _, image := range []string{"etcd", "controller", "worker", "registry"} {
+		if image == "registry" && !state.RegistryEnabled {
+			continue
+		}
 		for i := 0; i < numWorkers; i++ {
 			conf := containers.ContainerConfig{
 				ImageName:   image,

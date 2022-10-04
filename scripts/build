@@ -12,7 +12,6 @@ cmd_help () {
   echo ""
 }
 
-
 BASE_PACKAGE="github.com/greymatter-io/lxdk"
 VERSIONS_PACKAGE="${BASE_PACKAGE}/version"
 MAIN_PACKAGE="${BASE_PACKAGE}/cmd/lxdk"
@@ -23,6 +22,12 @@ VERSION_FLAG="-X '${VERSIONS_PACKAGE}.version=$VERSION'"
 cmd_build() {
   CGO_ENABLED=0 GOOS=$goos go build \
          -o "./bin/lxdk" -a \
+         -ldflags "-extldflags \"-static\" $COMMIT_FLAG $VERSION_FLAG" \
+         --mod=vendor $MAIN_PACKAGE
+}
+
+cmd_install () {
+  CGO_ENABLED=0 GOOS=$goos go install \
          -ldflags "-extldflags \"-static\" $COMMIT_FLAG $VERSION_FLAG" \
          --mod=vendor $MAIN_PACKAGE
 }
@@ -40,7 +45,7 @@ if [ $# -eq "0" ]; then
 fi
 CMD=$1
 case $CMD in
-build|debug|help)
+build|install|debug|help)
   shift
   cmd_$CMD
   ;;

@@ -83,7 +83,7 @@ func doStart(ctx *cli.Context) error {
 	// etcd cert
 	etcdIP, err := containers.WaitContainerIP(state.EtcdContainerName, []string{hostname}, is)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting container IP: %w", err)
 	}
 	etcdCertConfig := certs.CertConfig{
 		Name: "etcd",
@@ -102,12 +102,12 @@ func doStart(ctx *cli.Context) error {
 
 	err = certificates.CreateCert(etcdCertConfig)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating cert: %w", err)
 	}
 
 	controllerIP, err := containers.WaitContainerIP(state.ControllerContainerName, []string{hostname}, is)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting container IP: %w", err)
 	}
 	controllerCertConfig := certs.CertConfig{
 		Name: "kubernetes",
@@ -164,13 +164,15 @@ func doStart(ctx *cli.Context) error {
 	}
 
 	// configure registry
-	err = containers.RunCommands(state.RegistryContainerName, []string{
-		"systemctl daemon-reload",
-		"systemctl -q enable oci-registry",
-		"systemctl start oci-registry",
-	}, is)
-	if err != nil {
-		return err
+	if state.RegistryEnabled {
+		err = containers.RunCommands(state.RegistryContainerName, []string{
+			"systemctl daemon-reload",
+			"systemctl -q enable oci-registry",
+			"systemctl start oci-registry",
+		}, is)
+		if err != nil {
+			return err
+		}
 	}
 
 	// configure controller
@@ -278,20 +280,22 @@ func doStart(ctx *cli.Context) error {
 
 	// configure controller as worker
 	// configure worker(s)
-	registryIP, err := containers.WaitContainerIP(state.RegistryContainerName, []string{hostname}, is)
-	if err != nil {
-		return err
-	}
-
 	for _, worker := range workerContainers {
 		containerConfig := workerConfig{
 			ContainerName: worker,
 			ControllerIP:  controllerIP.String(),
-			RegistryName:  state.RegistryContainerName,
-			RegistryIP:    registryIP.String(),
 			EtcdIP:        etcdIP.String(),
 			ClusterDir:    path.Join(cacheDir, state.Name),
 		}
+		if state.RegistryEnabled {
+			registryIP, err := containers.WaitContainerIP(state.RegistryContainerName, []string{hostname}, is)
+			if err != nil {
+				return err
+			}
+			containerConfig.RegistryName = state.RegistryContainerName
+			containerConfig.RegistryIP = registryIP.String()
+		}
+
 		err = configureWorker(containerConfig, is)
 		if err != nil {
 			return err
@@ -604,6 +608,7 @@ func configureWorker(wc workerConfig, is lxdclient.InstanceServer) error {
 		"mkdir -p /etc/cni/net.d",
 		"mkdir -p /etc/kubernetes/config",
 		"ln -s /dev/console /dev/kmsg",
+		"ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf",
 	}, is)
 	if err != nil {
 		return err
